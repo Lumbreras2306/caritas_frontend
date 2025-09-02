@@ -1,15 +1,31 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { useAuth } from '~/lib/auth';
 import Button from '~/components/ui/Button';
+import LoadingSpinner from '~/components/ui/LoadingSpinner';
 
 export default function Home() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Si ya está autenticado, redirigir al dashboard
+  useEffect(() => {
+    if (user && !isLoading) {
+      navigate('/dashboard');
+    }
+  }, [user, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +35,13 @@ export default function Home() {
     try {
       await login(username, password);
       navigate('/dashboard');
-    } catch (err) {
-      setError('Credenciales inválidas. Intenta nuevamente.');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(
+        err.response?.data?.non_field_errors?.[0] || 
+        err.response?.data?.detail || 
+        'Error de conexión. Verifica que el backend esté funcionando.'
+      );
     } finally {
       setLoading(false);
     }
@@ -67,6 +88,7 @@ export default function Home() {
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                 placeholder="Ingresa tu usuario"
                 required
+                disabled={loading}
               />
             </div>
             
@@ -82,6 +104,7 @@ export default function Home() {
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                 placeholder="Ingresa tu contraseña"
                 required
+                disabled={loading}
               />
             </div>
             
@@ -89,6 +112,7 @@ export default function Home() {
               type="submit"
               loading={loading}
               className="w-full bg-red-600 hover:bg-red-700 text-white py-3 text-lg font-semibold"
+              disabled={loading}
             >
               {loading ? 'Iniciando...' : 'Iniciar Sesión'}
             </Button>
@@ -98,6 +122,12 @@ export default function Home() {
             <p className="text-gray-400 text-sm">
               Acceso exclusivo para administradores
             </p>
+            <Link 
+              to="/register" 
+              className="text-red-400 hover:text-red-300 text-sm mt-2 inline-block"
+            >
+              ¿Necesitas acceso? Pre-regístrate aquí
+            </Link>
           </div>
         </div>
 

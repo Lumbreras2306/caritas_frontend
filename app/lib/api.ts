@@ -6,12 +6,14 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  timeout: 10000,
 });
 
 // Interceptor para agregar token de autorización
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('caritas_token') : null;
   if (token) {
     config.headers.Authorization = `Token ${token}`;
   }
@@ -23,8 +25,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('caritas_token');
+        localStorage.removeItem('caritas_user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -65,6 +70,7 @@ export interface AdminUser {
   is_active: boolean;
   is_superuser: boolean;
   last_login: string | null;
+  main_hostel?: string;
 }
 
 export interface Location {
@@ -125,23 +131,23 @@ export const authService = {
 };
 
 export const usersService = {
-  getPreRegisters: () => api.get('/users/pre-register/'),
+  getPreRegisters: (params?: any) => api.get('/users/pre-register/', { params }),
   createPreRegister: (data: Partial<PreRegisterUser>) =>
     api.post('/users/pre-register/', data),
   approvePreRegisters: (ids: string[]) =>
     api.post('/users/pre-register/approve/', { pre_register_ids: ids }),
   
-  getCustomers: () => api.get('/users/customers/'),
+  getCustomers: (params?: any) => api.get('/users/customers/', { params }),
   createCustomer: (data: Partial<CustomUser>) =>
     api.post('/users/customers/', data),
   
-  getAdmins: () => api.get('/users/admins/'),
+  getAdmins: (params?: any) => api.get('/users/admins/', { params }),
   createAdmin: (data: Partial<AdminUser>) =>
     api.post('/users/admins/', data),
 };
 
 export const hostelsService = {
-  getHostels: () => api.get('/albergues/hostels/'),
+  getHostels: (params?: any) => api.get('/albergues/hostels/', { params }),
   createHostel: (data: Partial<Hostel>) =>
     api.post('/albergues/hostels/', data),
   getHostel: (id: string) => api.get(`/albergues/hostels/${id}/`),
@@ -150,37 +156,37 @@ export const hostelsService = {
   getAvailability: (id: string, date: string) =>
     api.get(`/albergues/hostels/${id}/availability/?date=${date}`),
   
-  getReservations: () => api.get('/albergues/reservations/'),
+  getReservations: (params?: any) => api.get('/albergues/reservations/', { params }),
   createReservation: (data: any) =>
     api.post('/albergues/reservations/', data),
 };
 
 export const servicesService = {
-  getServices: () => api.get('/services/services/'),
+  getServices: (params?: any) => api.get('/services/services/', { params }),
   createService: (data: Partial<Service>) =>
     api.post('/services/services/', data),
   getStatistics: () => api.get('/services/services/statistics/'),
   
-  getHostelServices: () => api.get('/services/hostel-services/'),
+  getHostelServices: (params?: any) => api.get('/services/hostel-services/', { params }),
   createHostelService: (data: any) =>
     api.post('/services/hostel-services/', data),
   
-  getReservations: () => api.get('/services/reservations/'),
+  getReservations: (params?: any) => api.get('/services/reservations/', { params }),
   createReservation: (data: any) =>
     api.post('/services/reservations/', data),
 };
 
 export const inventoryService = {
-  getItems: () => api.get('/inventory/items/'),
+  getItems: (params?: any) => api.get('/inventory/items/', { params }),
   createItem: (data: any) => api.post('/inventory/items/', data),
   getCategories: () => api.get('/inventory/items/categories/'),
   
-  getInventories: () => api.get('/inventory/inventories/'),
+  getInventories: (params?: any) => api.get('/inventory/inventories/', { params }),
   createInventory: (data: any) =>
     api.post('/inventory/inventories/', data),
   
-  getInventoryItems: () => api.get('/inventory/inventory-items/'),
+  getInventoryItems: (params?: any) => api.get('/inventory/inventory-items/', { params }),
   createInventoryItem: (data: any) =>
     api.post('/inventory/inventory-items/', data),
-  getLowStockItems: () => api.get('/inventory/inventory-items/low-stock/'),
+  getLowStockItems: (params?: any) => api.get('/inventory/inventory-items/low-stock/', { params }),
 };

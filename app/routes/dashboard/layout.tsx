@@ -1,5 +1,6 @@
-import { Link, Outlet, useLocation } from 'react-router';
+import { Link, Outlet, useLocation, Navigate } from 'react-router';
 import { useAuth } from '~/lib/auth';
+import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import { 
   HomeIcon, 
   UserGroupIcon, 
@@ -10,8 +11,22 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function DashboardLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const location = useLocation();
+
+  // Mostrar loading mientras se verifica la autenticación
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Redirigir al login si no está autenticado
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -21,8 +36,8 @@ export default function DashboardLayout() {
     { name: 'Inventario', href: '/dashboard/inventory', icon: ArchiveBoxIcon },
   ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -51,7 +66,9 @@ export default function DashboardLayout() {
                   key={item.name}
                   to={item.href}
                   className={`nav-link flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                    isActive ? 'active' : ''
+                    isActive 
+                      ? 'bg-red-600 text-white' 
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -66,15 +83,15 @@ export default function DashboardLayout() {
             <div className="flex items-center space-x-3 mb-3">
               <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-semibold">
-                  {user?.full_name?.charAt(0) || user?.username?.charAt(0) || 'A'}
+                  {user.full_name?.charAt(0) || user.username?.charAt(0) || 'A'}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">
-                  {user?.full_name || user?.username}
+                  {user.full_name || user.username}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {user?.is_superuser ? 'Administrador' : 'Usuario'}
+                  {user.is_superuser ? 'Administrador' : 'Usuario'}
                 </p>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
 import { authService } from './api';
 
 interface AuthUser {
@@ -6,6 +7,7 @@ interface AuthUser {
   username: string;
   full_name: string;
   is_superuser: boolean;
+  main_hostel?: string;
 }
 
 interface AuthContextType {
@@ -24,43 +26,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
+    // Verificar si hay token guardado al cargar
+    const savedToken = typeof window !== 'undefined' ? localStorage.getItem('caritas_token') : null;
+    const savedUser = typeof window !== 'undefined' ? localStorage.getItem('caritas_user') : null;
     
     if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('caritas_token');
+        localStorage.removeItem('caritas_user');
+      }
     }
     setIsLoading(false);
   }, []);
 
   const login = async (username: string, password: string) => {
-    const response = await authService.login({ username, password });
-    const { token: newToken, user_id, username: userUsername, full_name, is_superuser } = response.data;
-    
-    const userData: AuthUser = {
-      id: user_id,
-      username: userUsername,
-      full_name,
-      is_superuser,
-    };
+    try {
+      const response = await authService.login({ username, password });
+      const { token: newToken, user_id, username: userUsername, full_name, is_superuser, main_hostel } = response.data;
+      
+      const userData: AuthUser = {
+        id: user_id,
+        username: userUsername,
+        full_name,
+        is_superuser,
+        main_hostel,
+      };
 
-    setToken(newToken);
-    setUser(userData);
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(userData));
+      setToken(newToken);
+      setUser(userData);
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('caritas_token', newToken);
+        localStorage.setItem('caritas_user', JSON.stringify(userData));
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const logout = async () => {
     try {
-      await authService.logout();
+      if (token) {
+        await authService.logout();
+      }
     } catch (error) {
-      // Ignorar errores del logout
+      console.error('Logout error:', error);
     } finally {
       setUser(null);
       setToken(null);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('caritas_token');
+        localStorage.removeItem('caritas_user');
+      }
     }
   };
 
