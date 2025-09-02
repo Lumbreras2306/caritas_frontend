@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Links,
   Meta,
@@ -6,8 +7,9 @@ import {
   ScrollRestoration,
 } from "react-router";
 import type { LinksFunction } from "react-router";
+import { AuthProvider } from "~/lib/auth";
 
-import "./tailwind.css";
+import "./app.css";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -31,8 +33,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="font-sans bg-gray-50">
-        {children}
+      <body className="font-sans bg-gray-900 text-gray-100">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -1,129 +1,113 @@
-import { Link } from 'react-router';
-import { ArrowRightIcon, HeartIcon, HomeIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { useAuth } from '~/lib/auth';
+import Button from '~/components/ui/Button';
 
 export default function Home() {
-  const features = [
-    {
-      icon: HomeIcon,
-      title: 'Gestión de Albergues',
-      description: 'Administra albergues, ubicaciones y disponibilidad en tiempo real.',
-    },
-    {
-      icon: UserGroupIcon,
-      title: 'Control de Usuarios',
-      description: 'Sistema completo de registro, pre-registro y gestión de usuarios.',
-    },
-    {
-      icon: HeartIcon,
-      title: 'Servicios Sociales',
-      description: 'Organiza servicios comunitarios, horarios y reservas.',
-    },
-  ];
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      await login(username, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Credenciales inválidas. Intenta nuevamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <span className="text-3xl font-bold text-primary-600">🏠 Caritas</span>
-              <span className="ml-3 text-gray-600">Sistema de Gestión</span>
-            </div>
-            <Link
-              to="/login"
-              className="btn-primary animate-fade-in"
-            >
-              Iniciar Sesión
-              <ArrowRightIcon className="w-4 h-4" />
-            </Link>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo de Cáritas */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-red-600 rounded-full mb-4 shadow-2xl">
+            <span className="text-white text-4xl font-bold">C</span>
           </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center animate-fade-in">
-          <h1 className="text-6xl font-bold text-gray-900 mb-6">
-            Gestión de
-            <span className="text-primary-600 animate-pulse-slow"> Albergues</span>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Cáritas de Monterrey
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Sistema integral para la administración de albergues, servicios sociales, 
-            inventario y usuarios de la organización Caritas.
+          <p className="text-gray-300 text-sm">
+            Sistema de Administración
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/register"
-              className="btn-primary text-lg px-8 py-4 animate-slide-in"
-            >
-              Pre-registrarse
-              <ArrowRightIcon className="w-5 h-5" />
-            </Link>
-            <Link
-              to="/login"
-              className="btn-secondary text-lg px-8 py-4 animate-slide-in"
-              style={{ animationDelay: '0.1s' }}
-            >
-              Acceso Administrativo
-            </Link>
-          </div>
         </div>
 
-        {/* Features Section */}
-        <div className="mt-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Características Principales
+        {/* Formulario de Login */}
+        <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
+          <h2 className="text-2xl font-semibold text-white text-center mb-6">
+            Iniciar Sesión
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={feature.title}
-                  className="card animate-fade-in hover:shadow-lg"
-                  style={{ animationDelay: `${index * 0.2}s` }}
-                >
-                  <div className="text-primary-600 mb-4">
-                    <Icon className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </div>
-              );
-            })}
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
+                Usuario
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                placeholder="Ingresa tu usuario"
+                required
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+                Contraseña
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                placeholder="Ingresa tu contraseña"
+                required
+              />
+            </div>
+            
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 text-lg font-semibold"
+            >
+              {loading ? 'Iniciando...' : 'Iniciar Sesión'}
+            </Button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <p className="text-gray-400 text-sm">
+              Acceso exclusivo para administradores
+            </p>
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="mt-20 bg-white/60 backdrop-blur-sm rounded-2xl p-8">
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div className="animate-bounce-soft">
-              <div className="text-4xl font-bold text-primary-600">24/7</div>
-              <div className="text-gray-600 mt-2">Disponibilidad</div>
-            </div>
-            <div className="animate-bounce-soft" style={{ animationDelay: '0.5s' }}>
-              <div className="text-4xl font-bold text-primary-600">100%</div>
-              <div className="text-gray-600 mt-2">Seguridad</div>
-            </div>
-            <div className="animate-bounce-soft" style={{ animationDelay: '1s' }}>
-              <div className="text-4xl font-bold text-primary-600">∞</div>
-              <div className="text-gray-600 mt-2">Capacidad</div>
-            </div>
-          </div>
+        {/* Footer */}
+        <div className="text-center mt-8">
+          <p className="text-gray-500 text-xs">
+            © 2024 Cáritas de Monterrey. Todos los derechos reservados.
+          </p>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white/80 backdrop-blur-md mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600">
-            <p>&copy; 2024 Caritas - Sistema de Gestión de Albergues</p>
-            <p className="mt-2">Desarrollado con ❤️ para ayudar a la comunidad</p>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { ReactNode, ButtonHTMLAttributes } from 'react';
+import { type ReactNode, type ButtonHTMLAttributes } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,10 +20,10 @@ export default function Button({
   const baseClasses = 'font-medium rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2';
   
   const variantClasses = {
-    primary: 'bg-primary-500 hover:bg-primary-600 text-white',
-    secondary: 'bg-secondary-500 hover:bg-secondary-600 text-white',
-    outline: 'border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white',
-    danger: 'bg-red-500 hover:bg-red-600 text-white',
+    primary: 'bg-red-600 hover:bg-red-700 text-white',
+    secondary: 'bg-gray-700 hover:bg-gray-600 text-white',
+    outline: 'border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white',
+    danger: 'bg-red-800 hover:bg-red-900 text-white',
   };
   
   const sizeClasses = {

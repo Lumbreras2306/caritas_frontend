@@ -13,15 +13,98 @@ type Pages = {
   "/": {
     params: {};
   };
+  "/dashboard": {
+    params: {};
+  };
+  "/dashboard/users": {
+    params: {};
+  };
+  "/dashboard/users/preregisters": {
+    params: {};
+  };
+  "/dashboard/hostels": {
+    params: {};
+  };
+  "/dashboard/hostels/new": {
+    params: {};
+  };
+  "/dashboard/hostels/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/dashboard/services": {
+    params: {};
+  };
+  "/dashboard/services/new": {
+    params: {};
+  };
+  "/dashboard/inventory": {
+    params: {};
+  };
+  "/dashboard/inventory/items": {
+    params: {};
+  };
+  "/dashboard/reservations": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/";
+    page: "/" | "/dashboard" | "/dashboard/users" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/new" | "/dashboard/hostels/:id" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations";
   };
   "routes/home.tsx": {
     id: "routes/home";
     page: "/";
+  };
+  "routes/dashboard/layout.tsx": {
+    id: "routes/dashboard/layout";
+    page: "/dashboard" | "/dashboard/users" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/new" | "/dashboard/hostels/:id" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations";
+  };
+  "routes/dashboard/index.tsx": {
+    id: "routes/dashboard/index";
+    page: "/dashboard";
+  };
+  "routes/dashboard/users/index.tsx": {
+    id: "routes/dashboard/users/index";
+    page: "/dashboard/users";
+  };
+  "routes/dashboard/users/preregisters.tsx": {
+    id: "routes/dashboard/users/preregisters";
+    page: "/dashboard/users/preregisters";
+  };
+  "routes/dashboard/hostels/index.tsx": {
+    id: "routes/dashboard/hostels/index";
+    page: "/dashboard/hostels";
+  };
+  "routes/dashboard/hostels/new.tsx": {
+    id: "routes/dashboard/hostels/new";
+    page: "/dashboard/hostels/new";
+  };
+  "routes/dashboard/hostels/detail.tsx": {
+    id: "routes/dashboard/hostels/detail";
+    page: "/dashboard/hostels/:id";
+  };
+  "routes/dashboard/services/index.tsx": {
+    id: "routes/dashboard/services/index";
+    page: "/dashboard/services";
+  };
+  "routes/dashboard/services/new.tsx": {
+    id: "routes/dashboard/services/new";
+    page: "/dashboard/services/new";
+  };
+  "routes/dashboard/inventory/index.tsx": {
+    id: "routes/dashboard/inventory/index";
+    page: "/dashboard/inventory";
+  };
+  "routes/dashboard/inventory/items.tsx": {
+    id: "routes/dashboard/inventory/items";
+    page: "/dashboard/inventory/items";
+  };
+  "routes/dashboard/reservations/index.tsx": {
+    id: "routes/dashboard/reservations/index";
+    page: "/dashboard/reservations";
   };
 };
