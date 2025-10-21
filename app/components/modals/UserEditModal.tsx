@@ -256,9 +256,9 @@ export default function UserEditModal({ isOpen, onClose, userId, onUserUpdated }
                   required
                   className="input-field"
                 >
-                  <option value="LEVEL_1">Nivel 1</option>
-                  <option value="LEVEL_2">Nivel 2</option>
-                  <option value="LEVEL_3">Nivel 3</option>
+                  <option value="LEVEL_1">Nivel 1 - Fuera de riesgo</option>
+                  <option value="LEVEL_2">Nivel 2 - Pobreza moderada</option>
+                  <option value="LEVEL_3">Nivel 3 - Pobreza extrema</option>
                 </select>
               </div>
             </div>

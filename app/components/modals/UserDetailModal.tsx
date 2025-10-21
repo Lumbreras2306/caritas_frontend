@@ -54,9 +54,9 @@ export default function UserDetailModal({ isOpen, onClose, userId }: UserDetailM
 
   const getPovertyLevelText = (level: string) => {
     const levels = {
-      'LEVEL_1': 'Nivel 1',
-      'LEVEL_2': 'Nivel 2', 
-      'LEVEL_3': 'Nivel 3'
+      'LEVEL_1': 'Nivel 1 - Fuera de riesgo',
+      'LEVEL_2': 'Nivel 2 - Pobreza moderada', 
+      'LEVEL_3': 'Nivel 3 - Pobreza extrema'
     };
     return levels[level as keyof typeof levels] || 'No especificado';
   };

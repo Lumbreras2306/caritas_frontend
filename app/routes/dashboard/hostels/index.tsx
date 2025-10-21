@@ -162,7 +162,7 @@ export default function Hostels() {
             <span>{error}</span>
             <button
               onClick={loadStats}
-              className="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors"
+              className="ml-4 btn-primary px-3 py-1 text-sm"
             >
               Reintentar
             </button>

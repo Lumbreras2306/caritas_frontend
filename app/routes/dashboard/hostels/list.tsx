@@ -140,7 +140,7 @@ export default function HostelsList() {
               placeholder="Buscar por nombre, ciudad o dirección..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field pl-10"
+              className="w-full py-3 pr-4 pl-14 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
             />
           </div>
           <button
@@ -218,7 +218,7 @@ export default function HostelsList() {
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link
                   to={`/dashboard/hostels/detail/${hostel.id}`}
-                  className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors flex items-center justify-center gap-1 text-sm"
+                  className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors flex items-center justify-center gap-1 text-sm"
                 >
                   <EyeIcon className="w-4 h-4" />
                   Ver
@@ -226,7 +226,7 @@ export default function HostelsList() {
                 
                 <Link
                   to={`/dashboard/hostels/edit/${hostel.id}`}
-                  className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors flex items-center justify-center gap-1 text-sm"
+                  className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded transition-colors flex items-center justify-center gap-1 text-sm"
                 >
                   <PencilIcon className="w-4 h-4" />
                   Editar
@@ -234,7 +234,7 @@ export default function HostelsList() {
                 
                 <button
                   onClick={() => handleDeleteClick(hostel.id, hostel.name)}
-                  className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+                  className="btn-danger px-3 py-2"
                   title="Eliminar albergue"
                 >
                   <TrashIcon className="w-4 h-4" />
@@ -271,7 +271,7 @@ export default function HostelsList() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-colors"
+              className="btn-secondary disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               Anterior
             </button>
@@ -298,7 +298,7 @@ export default function HostelsList() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-colors"
+              className="btn-secondary disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               Siguiente
             </button>

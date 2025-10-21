@@ -4,6 +4,7 @@ import { hostelsService, locationsService, type Hostel, type HostelUpdateData, t
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import Button from '~/components/ui/Button';
 import SimpleMapPicker from '~/components/maps/SimpleMapPicker';
+import { extractCoordinatesFromGoogleMaps, isValidGoogleMapsUrl } from '~/lib/googleMapsUtils';
 import { 
   ArrowLeftIcon,
   MapPinIcon,
@@ -20,6 +21,8 @@ export default function EditHostel() {
   const [error, setError] = useState('');
   const [useMapSelector, setUseMapSelector] = useState(false);
   const [hostel, setHostel] = useState<Hostel | null>(null);
+  const [googleMapsUrl, setGoogleMapsUrl] = useState('');
+  const [processingUrl, setProcessingUrl] = useState(false);
 
   const handleLocationSelect = (location: {
     latitude: number;
@@ -44,6 +47,32 @@ export default function EditHostel() {
       }
     }));
   };
+
+  const handleGoogleMapsUrlChange = async (url: string) => {
+    setGoogleMapsUrl(url);
+    
+    if (url && isValidGoogleMapsUrl(url)) {
+      setProcessingUrl(true);
+      try {
+        const coordinates = await extractCoordinatesFromGoogleMaps(url);
+        if (coordinates) {
+          setFormData(prev => ({
+            ...prev,
+            location: {
+              ...prev.location,
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude,
+            }
+          }));
+          setUseMapSelector(true); // Cambiar al modo mapa para mostrar la ubicación
+        }
+      } catch (error) {
+        console.error('Error extracting coordinates:', error);
+      } finally {
+        setProcessingUrl(false);
+      }
+    }
+  };
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -51,8 +80,8 @@ export default function EditHostel() {
     women_capacity: 0,
     is_active: true,
     location: {
-      latitude: 0,
-      longitude: 0,
+      latitude: 25.6866, // Monterrey por defecto
+      longitude: -100.3161, // Monterrey por defecto
       address: '',
       city: '',
       state: '',
@@ -371,6 +400,36 @@ export default function EditHostel() {
                 </button>
               </div>
             </div>
+
+            {/* Campo para enlace de Google Maps */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Enlace de Google Maps (opcional)
+              </label>
+              <input
+                type="url"
+                value={googleMapsUrl}
+                onChange={(e) => handleGoogleMapsUrlChange(e.target.value)}
+                placeholder="Ejemplo: https://www.google.com/maps?q=19.432600,-99.133200"
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+              />
+              {processingUrl && (
+                <p className="text-blue-400 text-sm mt-1">
+                  🔄 Procesando enlace y extrayendo coordenadas...
+                </p>
+              )}
+              {googleMapsUrl && !isValidGoogleMapsUrl(googleMapsUrl) && !processingUrl && (
+                <p className="text-red-400 text-sm mt-1">
+                  Por favor ingresa un enlace válido de Google Maps
+                </p>
+              )}
+              {googleMapsUrl && (googleMapsUrl.includes('goo.gl') || googleMapsUrl.includes('maps.app.goo.gl')) && (
+                <p className="text-yellow-400 text-sm mt-1">
+                  ⚠️ Los enlaces acortados (goo.gl, maps.app.goo.gl) no se pueden procesar automáticamente. 
+                  Por favor, usa un enlace completo de Google Maps o selecciona la ubicación manualmente en el mapa.
+                </p>
+              )}
+            </div>
             
             <SimpleMapPicker
               onLocationSelect={handleLocationSelect}
@@ -500,14 +559,14 @@ export default function EditHostel() {
             <Button
               type="submit"
               loading={saving}
-              className="bg-red-600 hover:bg-red-700"
+              className="btn-primary"
             >
               {saving ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
             <Button
               type="button"
               onClick={() => navigate(`/dashboard/hostels/detail/${id}`)}
-              className="bg-gray-600 hover:bg-gray-700"
+              className="btn-secondary"
             >
               Cancelar
             </Button>

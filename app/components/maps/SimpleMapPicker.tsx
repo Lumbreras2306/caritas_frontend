@@ -40,6 +40,7 @@ const MapClickHandler = React.memo(({ onLocationClick }: { onLocationClick: (lat
   return null;
 });
 
+
 export default function SimpleMapPicker({
   onLocationSelect,
   initialLocation = { latitude: 25.6866, longitude: -100.3161 }, // Monterrey por defecto
@@ -56,6 +57,10 @@ export default function SimpleMapPicker({
   useEffect(() => {
     if (initialLocation.latitude && initialLocation.longitude) {
       setPosition([initialLocation.latitude, initialLocation.longitude]);
+      // Forzar actualización del mapa
+      if (mapRef.current) {
+        mapRef.current.setView([initialLocation.latitude, initialLocation.longitude], mapRef.current.getZoom());
+      }
     }
   }, [initialLocation.latitude, initialLocation.longitude]);
 
@@ -131,6 +136,7 @@ export default function SimpleMapPicker({
 
       <div style={{ height }} className="rounded-lg overflow-hidden border border-gray-600">
         <MapContainer
+          key={`${position[0]}-${position[1]}`}
           center={position}
           zoom={13}
           style={{ height: '100%', width: '100%' }}

@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router';
 import { hostelsService } from '~/lib/api';
 import { formatDate } from '~/lib/utils';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
+import NewReservationModal from '~/components/modals/NewReservationModal';
+import EditReservationModal from '~/components/modals/EditReservationModal';
 import { 
   CalendarDaysIcon,
   MagnifyingGlassIcon,
@@ -51,6 +53,11 @@ export default function HostelReservations() {
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState('');
   const [hostels, setHostels] = useState<any[]>([]);
+  
+  // Modal states
+  const [newReservationModalOpen, setNewReservationModalOpen] = useState(false);
+  const [editReservationModalOpen, setEditReservationModalOpen] = useState(false);
+  const [editingReservation, setEditingReservation] = useState<HostelReservation | null>(null);
 
   const loadReservations = async () => {
     try {
@@ -118,6 +125,11 @@ export default function HostelReservations() {
     }
   };
 
+  const handleEditReservation = (reservation: HostelReservation) => {
+    setEditingReservation(reservation);
+    setEditReservationModalOpen(true);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('¿Está seguro de eliminar esta reserva?')) return;
     
@@ -161,10 +173,13 @@ export default function HostelReservations() {
             {totalCount} reserva{totalCount !== 1 ? 's' : ''} encontrada{totalCount !== 1 ? 's' : ''}
           </p>
         </div>
-        <Link to="/dashboard/hostels/reservations/new" className="btn-primary flex items-center gap-2">
+        <button 
+          onClick={() => setNewReservationModalOpen(true)}
+          className="btn-primary flex items-center gap-2"
+        >
           <PlusIcon className="w-5 h-5" />
           Nueva Reserva
-        </Link>
+        </button>
       </div>
 
       {error && (
@@ -183,7 +198,7 @@ export default function HostelReservations() {
               placeholder="Buscar por nombre de usuario o albergue..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field pl-10"
+              className="w-full py-3 pr-4 pl-14 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
             />
           </div>
           <button
@@ -303,6 +318,14 @@ export default function HostelReservations() {
                   Ver
                 </Link>
                 
+                <button
+                  onClick={() => handleEditReservation(reservation)}
+                  className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
+                >
+                  <PencilIcon className="w-4 h-4" />
+                  Editar
+                </button>
+                
                 {reservation.status === 'pending' && (
                   <button
                     onClick={() => handleStatusChange(reservation.id, 'confirmed')}
@@ -336,7 +359,7 @@ export default function HostelReservations() {
                 {(reservation.status === 'pending' || reservation.status === 'confirmed') && (
                   <button
                     onClick={() => handleStatusChange(reservation.id, 'cancelled')}
-                    className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
+                    className="btn-danger px-3 py-2 flex items-center justify-center gap-1"
                   >
                     <XCircleIcon className="w-4 h-4" />
                     Cancelar
@@ -345,7 +368,7 @@ export default function HostelReservations() {
                 
                 <button
                   onClick={() => handleDelete(reservation.id)}
-                  className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  className="btn-danger px-3 py-2"
                   title="Eliminar reserva"
                 >
                   <TrashIcon className="w-4 h-4" />
@@ -382,7 +405,7 @@ export default function HostelReservations() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-colors"
+              className="btn-secondary disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               Anterior
             </button>
@@ -409,13 +432,38 @@ export default function HostelReservations() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-colors"
+              className="btn-secondary disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               Siguiente
             </button>
           </div>
         </div>
       )}
+
+      {/* Modal de Nueva Reserva */}
+      <NewReservationModal
+        isOpen={newReservationModalOpen}
+        onClose={() => setNewReservationModalOpen(false)}
+        onReservationCreated={() => {
+          loadReservations();
+          setNewReservationModalOpen(false);
+        }}
+      />
+
+      {/* Modal de Editar Reserva */}
+      <EditReservationModal
+        isOpen={editReservationModalOpen}
+        onClose={() => {
+          setEditReservationModalOpen(false);
+          setEditingReservation(null);
+        }}
+        onReservationUpdated={() => {
+          loadReservations();
+          setEditReservationModalOpen(false);
+          setEditingReservation(null);
+        }}
+        reservation={editingReservation}
+      />
     </div>
   );
 }

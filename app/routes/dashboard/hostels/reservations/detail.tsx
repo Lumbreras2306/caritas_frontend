@@ -291,7 +291,7 @@ export default function ReservationDetail() {
               {(reservation.status === 'pending' || reservation.status === 'confirmed') && (
                 <button
                   onClick={() => handleStatusChange('cancelled')}
-                  className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                  className="w-full btn-danger px-4 py-2 flex items-center justify-center gap-2"
                 >
                   <XCircleIcon className="w-4 h-4" />
                   Cancelar Reserva

@@ -203,7 +203,7 @@ export default function PreRegisters() {
               <Button 
                 onClick={handleBulkApprove} 
                 disabled={actionLoading}
-                className="bg-green-600 hover:bg-green-700 flex items-center space-x-2"
+                className="btn-primary flex items-center space-x-2"
               >
                 {actionLoading ? (
                   <>
@@ -236,7 +236,7 @@ export default function PreRegisters() {
               onClick={() => setFilter(status)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === status
-                  ? 'bg-red-600 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
@@ -264,7 +264,7 @@ export default function PreRegisters() {
                           setSelectedIds([]);
                         }
                       }}
-                      className="rounded border-gray-600 bg-gray-700 text-red-600 focus:ring-red-500"
+                      className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
                     />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -295,7 +295,7 @@ export default function PreRegisters() {
                         type="checkbox"
                         checked={selectedIds.includes(preRegister.id)}
                         onChange={() => toggleSelection(preRegister.id)}
-                        className="rounded border-gray-600 bg-gray-700 text-red-600 focus:ring-red-500"
+                        className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
                       />
                     </td>
                     <td className="px-6 py-4">
@@ -421,7 +421,7 @@ export default function PreRegisters() {
         title="Aprobar Pre-registro"
         message="¿Estás seguro de que quieres aprobar este pre-registro? Esta acción convertirá el pre-registro en un usuario activo del sistema."
         confirmText="Aprobar"
-        confirmColor="green"
+        type="info"
         loading={actionLoading}
       />
 
@@ -436,7 +436,7 @@ export default function PreRegisters() {
         title="Rechazar Pre-registro"
         message="¿Estás seguro de que quieres rechazar este pre-registro? Esta acción marcará el pre-registro como rechazado y no se podrá revertir."
         confirmText="Rechazar"
-        confirmColor="red"
+        type="danger"
         loading={actionLoading}
       />
 
@@ -451,7 +451,7 @@ export default function PreRegisters() {
         title="Eliminar Pre-registro"
         message="¿Estás seguro de que quieres eliminar este pre-registro rechazado? Esta acción es permanente y no se puede deshacer."
         confirmText="Eliminar"
-        confirmColor="red"
+        type="danger"
         loading={actionLoading}
       />
 
@@ -463,7 +463,7 @@ export default function PreRegisters() {
         title="Operación Exitosa"
         message={successMessage}
         confirmText="Aceptar"
-        confirmColor="green"
+        type="info"
         loading={false}
       />
     </div>
