@@ -99,6 +99,7 @@ export interface Hostel {
   men_capacity: number;
   women_capacity: number;
   is_active: boolean;
+  image_url?: string; // URL de la imagen del albergue
   location: string; // ID de la ubicación
   location_data: Location; // Datos completos de la ubicación
   coordinates?: [number, number]; // Array de coordenadas [lat, lng]
@@ -115,7 +116,6 @@ export interface Hostel {
   created_at: string;
   updated_at: string;
   created_by_name?: string;
-  image_url?: string;
 }
 
 export interface Service {
@@ -229,6 +229,7 @@ export interface HostelCreateData {
   men_capacity: number;
   women_capacity: number;
   is_active: boolean;
+  image_url?: string; // URL de la imagen del albergue
   location: {
     latitude: string; // Cambiado a string según la API
     longitude: string; // Cambiado a string según la API
@@ -247,6 +248,7 @@ export interface HostelUpdateData {
   men_capacity?: number;
   women_capacity?: number;
   is_active?: boolean;
+  image_url?: string; // URL de la imagen del albergue
   // location se omite en las actualizaciones porque el backend espera un UUID
 }
 

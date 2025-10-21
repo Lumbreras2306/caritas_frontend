@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { hostelsService } from '~/lib/api';
 import { formatDate } from '~/lib/utils';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
+import DropdownMenu from '~/components/ui/DropdownMenu';
 import NewReservationModal from '~/components/modals/NewReservationModal';
 import EditReservationModal from '~/components/modals/EditReservationModal';
 import { 
@@ -255,13 +256,13 @@ export default function HostelReservations() {
         {reservations.map((reservation) => (
           <div key={reservation.id} className="card hover:shadow-xl transition-all duration-200">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <BuildingOfficeIcon className="w-5 h-5 text-blue-400" />
-                  <h3 className="text-lg font-semibold text-white">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <BuildingOfficeIcon className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                  <h3 className="text-lg font-semibold text-white truncate">
                     {reservation.user_name}
                   </h3>
-                  <span className={`px-2 py-1 text-xs rounded-full text-white ${getStatusColor(reservation.status)}`}>
+                  <span className={`px-2 py-1 text-xs rounded-full text-white ${getStatusColor(reservation.status)} flex-shrink-0`}>
                     {reservation.status_display}
                   </span>
                 </div>
@@ -309,70 +310,55 @@ export default function HostelReservations() {
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <Link
                   to={`/dashboard/hostels/reservations/detail/${reservation.id}`}
-                  className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
+                  className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1 text-sm"
                 >
                   <EyeIcon className="w-4 h-4" />
-                  Ver
+                  <span className="hidden sm:inline">Ver</span>
                 </Link>
                 
-                <button
-                  onClick={() => handleEditReservation(reservation)}
-                  className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
-                >
-                  <PencilIcon className="w-4 h-4" />
-                  Editar
-                </button>
-                
-                {reservation.status === 'pending' && (
-                  <button
-                    onClick={() => handleStatusChange(reservation.id, 'confirmed')}
-                    className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
-                  >
-                    <CheckCircleIcon className="w-4 h-4" />
-                    Confirmar
-                  </button>
-                )}
-                
-                {reservation.status === 'confirmed' && (
-                  <button
-                    onClick={() => handleStatusChange(reservation.id, 'checked_in')}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
-                  >
-                    <ClockIcon className="w-4 h-4" />
-                    Check-in
-                  </button>
-                )}
-                
-                {reservation.status === 'checked_in' && (
-                  <button
-                    onClick={() => handleStatusChange(reservation.id, 'checked_out')}
-                    className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
-                  >
-                    <ClockIcon className="w-4 h-4" />
-                    Check-out
-                  </button>
-                )}
-                
-                {(reservation.status === 'pending' || reservation.status === 'confirmed') && (
-                  <button
-                    onClick={() => handleStatusChange(reservation.id, 'cancelled')}
-                    className="btn-danger px-3 py-2 flex items-center justify-center gap-1"
-                  >
-                    <XCircleIcon className="w-4 h-4" />
-                    Cancelar
-                  </button>
-                )}
-                
-                <button
-                  onClick={() => handleDelete(reservation.id)}
-                  className="btn-danger px-3 py-2"
-                  title="Eliminar reserva"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </button>
+                <DropdownMenu
+                  items={[
+                    {
+                      label: 'Editar',
+                      icon: PencilIcon,
+                      onClick: () => handleEditReservation(reservation),
+                      className: 'text-orange-400 hover:text-orange-300'
+                    },
+                    ...(reservation.status === 'pending' ? [{
+                      label: 'Confirmar',
+                      icon: CheckCircleIcon,
+                      onClick: () => handleStatusChange(reservation.id, 'confirmed'),
+                      className: 'text-green-400 hover:text-green-300'
+                    }] : []),
+                    ...(reservation.status === 'confirmed' ? [{
+                      label: 'Check-in',
+                      icon: ClockIcon,
+                      onClick: () => handleStatusChange(reservation.id, 'checked_in'),
+                      className: 'text-blue-400 hover:text-blue-300'
+                    }] : []),
+                    ...(reservation.status === 'checked_in' ? [{
+                      label: 'Check-out',
+                      icon: ClockIcon,
+                      onClick: () => handleStatusChange(reservation.id, 'checked_out'),
+                      className: 'text-gray-400 hover:text-gray-300'
+                    }] : []),
+                    ...((reservation.status === 'pending' || reservation.status === 'confirmed') ? [{
+                      label: 'Cancelar',
+                      icon: XCircleIcon,
+                      onClick: () => handleStatusChange(reservation.id, 'cancelled'),
+                      className: 'text-red-400 hover:text-red-300'
+                    }] : []),
+                    {
+                      label: 'Eliminar',
+                      icon: TrashIcon,
+                      onClick: () => handleDelete(reservation.id),
+                      className: 'text-red-400 hover:text-red-300'
+                    }
+                  ]}
+                />
               </div>
             </div>
           </div>

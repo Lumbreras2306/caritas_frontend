@@ -79,6 +79,7 @@ export default function EditHostel() {
     men_capacity: 0,
     women_capacity: 0,
     is_active: true,
+    image_url: '',
     location: {
       latitude: 25.6866, // Monterrey por defecto
       longitude: -100.3161, // Monterrey por defecto
@@ -110,6 +111,7 @@ export default function EditHostel() {
         men_capacity: hostelData.men_capacity,
         women_capacity: hostelData.women_capacity,
         is_active: hostelData.is_active,
+        image_url: hostelData.image_url || '',
         location: {
           latitude: parseFloat(hostelData.location_data.latitude),
           longitude: parseFloat(hostelData.location_data.longitude),
@@ -177,6 +179,7 @@ export default function EditHostel() {
         men_capacity: formData.men_capacity,
         women_capacity: formData.women_capacity,
         is_active: formData.is_active,
+        image_url: formData.image_url.trim() || undefined,
       };
       
       // Actualizar el albergue
@@ -319,6 +322,23 @@ export default function EditHostel() {
                   placeholder="+52 81 1234 5678"
                 />
               </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                URL de la Imagen
+              </label>
+              <input
+                type="url"
+                name="image_url"
+                value={formData.image_url}
+                onChange={handleChange}
+                className="input-field"
+                placeholder="https://ejemplo.com/imagen.jpg"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                URL de la imagen que representará al albergue (opcional)
+              </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 mt-4">

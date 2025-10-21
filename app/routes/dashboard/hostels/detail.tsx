@@ -139,6 +139,23 @@ export default function HostelDetail() {
                 Información General
               </h2>
               
+              {/* Imagen del albergue */}
+              {hostel.image_url && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Imagen del Albergue</label>
+                  <div className="relative">
+                    <img
+                      src={hostel.image_url}
+                      alt={hostel.name}
+                      className="w-full max-w-md h-48 object-cover rounded-lg"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+              
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Nombre</label>
