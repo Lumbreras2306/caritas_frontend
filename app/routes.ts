@@ -1,4 +1,10 @@
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import type { LinksFunction } from 'react-router';
+import leafletStyles from 'leaflet/dist/leaflet.css?url';
+
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: leafletStyles },
+];
 
 export default [
   index("routes/home.tsx"),
@@ -15,6 +21,8 @@ export default [
     route("hostels/edit/:id", "routes/dashboard/hostels/edit.tsx"),
     route("hostels/detail/:id", "routes/dashboard/hostels/detail.tsx"),
     route("hostels/reservations", "routes/dashboard/hostels/reservations.tsx"),
+    route("hostels/reservations/detail/:id", "routes/dashboard/hostels/reservations/detail.tsx"),
+    route("hostels/statistics", "routes/dashboard/hostels/statistics.tsx"),
     route("services", "routes/dashboard/services/index.tsx"),
     route("services/new", "routes/dashboard/services/new.tsx"),
     route("inventory", "routes/dashboard/inventory/index.tsx"),

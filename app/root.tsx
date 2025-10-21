@@ -10,6 +10,7 @@ import type { LinksFunction } from "react-router";
 import { AuthProvider } from "~/lib/auth";
 
 import "./app.css";
+import "./caritas-colors.css";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -30,10 +31,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Cáritas Admin Panel</title>
+        <meta name="description" content="Panel de administración de Cáritas de Monterrey - Gestión de albergues, usuarios y servicios" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <Meta />
         <Links />
       </head>
-      <body className="font-sans bg-gray-900 text-gray-100">
+      <body className="font-sans" style={{ backgroundColor: 'var(--caritas-bg-dark)', color: 'var(--caritas-text-primary)' }}>
         <AuthProvider>
           {children}
         </AuthProvider>

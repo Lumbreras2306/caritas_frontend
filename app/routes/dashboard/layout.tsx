@@ -17,7 +17,7 @@ export default function DashboardLayout() {
   // Mostrar loading mientras se verifica la autenticación
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1a1a1a' }}>
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -45,17 +45,18 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-50 w-56 bg-gray-800 border-r border-gray-700">
+      <div className="fixed inset-y-0 left-0 z-50 w-64" style={{ backgroundColor: '#2d3748', borderRight: '1px solid #4a5568' }}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-center h-16 bg-red-600 border-b border-red-700">
+          <div className="flex items-center justify-center h-20" style={{ backgroundColor: '#2B5A8C', borderBottom: '2px solid #4A90A4' }}>
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <span className="text-red-600 text-lg font-bold">C</span>
-              </div>
-              <span className="text-white font-bold text-lg">Cáritas</span>
+              <img 
+                src="/logo.png" 
+                alt="Cáritas de Monterrey" 
+                className="h-16 w-auto"
+              />
             </div>
           </div>
 
@@ -73,9 +74,22 @@ export default function DashboardLayout() {
                     to={item.href}
                     className={`nav-link flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                       isActive 
-                        ? 'bg-red-600 text-white' 
-                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                        ? 'text-white' 
+                        : 'text-gray-300 hover:text-white'
                     }`}
+                    style={{
+                      backgroundColor: isActive ? '#4A90A4' : 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = '#4A90A4';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
                   >
                     <Icon className="w-5 h-5" />
                     <span>{item.name}</span>
@@ -85,11 +99,11 @@ export default function DashboardLayout() {
             </div>
 
             {/* Separador */}
-            <div className="border-t border-gray-700 my-4"></div>
+            <div className="border-t my-4" style={{ borderColor: '#4a5568' }}></div>
 
             {/* Navegación de administración */}
             <div className="space-y-2">
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold px-3">
+              <p className="text-xs uppercase tracking-wider font-semibold px-3" style={{ color: '#a0aec0' }}>
                 Administración
               </p>
               {adminNavigation.map((item) => {
@@ -102,9 +116,22 @@ export default function DashboardLayout() {
                     to={item.href}
                     className={`nav-link flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                       isActive 
-                        ? 'bg-red-600 text-white' 
-                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                        ? 'text-white' 
+                        : 'text-gray-300 hover:text-white'
                     }`}
+                    style={{
+                      backgroundColor: isActive ? '#4A90A4' : 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = '#4A90A4';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
                   >
                     <Icon className="w-5 h-5" />
                     <span>{item.name}</span>
@@ -115,9 +142,9 @@ export default function DashboardLayout() {
           </nav>
 
           {/* User Info & Logout */}
-          <div className="p-4 border-t border-gray-700">
+          <div className="p-4 border-t" style={{ borderColor: '#4a5568' }}>
             <div className="flex items-center space-x-3 mb-3">
-              <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#4A90A4' }}>
                 <span className="text-white text-sm font-semibold">
                   {user.full_name?.charAt(0) || user.username?.charAt(0) || 'A'}
                 </span>
@@ -126,7 +153,7 @@ export default function DashboardLayout() {
                 <p className="text-sm font-medium text-white truncate">
                   {user.full_name || user.username}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs" style={{ color: '#a0aec0' }}>
                   {user.is_superuser ? 'Administrador' : 'Usuario'}
                 </p>
               </div>
@@ -134,7 +161,13 @@ export default function DashboardLayout() {
             
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200"
+              className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg transition-all duration-200"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#4A90A4';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               <ArrowRightOnRectangleIcon className="w-4 h-4" />
               <span>Cerrar Sesión</span>
@@ -144,7 +177,7 @@ export default function DashboardLayout() {
       </div>
 
       {/* Main Content */}
-      <div className="pl-56">
+      <div className="pl-64">
         <main className="py-8 px-6">
           <Outlet />
         </main>

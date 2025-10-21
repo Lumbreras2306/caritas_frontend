@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router';
-import { hostelsService, type Hostel, type HostelUpdateData } from '~/lib/api';
+import { hostelsService, locationsService, type Hostel, type HostelUpdateData, type LocationRequest } from '~/lib/api';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import Button from '~/components/ui/Button';
 import SimpleMapPicker from '~/components/maps/SimpleMapPicker';
@@ -70,6 +70,8 @@ export default function EditHostel() {
       setError('');
       const response = await hostelsService.getHostel(id);
       const hostelData = response.data;
+      console.log('🔍 Datos recibidos del backend (Hostel Edit):', hostelData);
+      console.log('📍 Ubicación recibida:', hostelData.location_data);
       setHostel(hostelData);
       
       // Llenar el formulario con los datos existentes
@@ -80,14 +82,14 @@ export default function EditHostel() {
         women_capacity: hostelData.women_capacity,
         is_active: hostelData.is_active,
         location: {
-          latitude: hostelData.location.latitude,
-          longitude: hostelData.location.longitude,
-          address: hostelData.location.address,
-          city: hostelData.location.city,
-          state: hostelData.location.state,
-          country: hostelData.location.country,
-          zip_code: hostelData.location.zip_code,
-          landmarks: hostelData.location.landmarks || '',
+          latitude: parseFloat(hostelData.location_data.latitude),
+          longitude: parseFloat(hostelData.location_data.longitude),
+          address: hostelData.location_data.address,
+          city: hostelData.location_data.city,
+          state: hostelData.location_data.state,
+          country: hostelData.location_data.country,
+          zip_code: hostelData.location_data.zip_code,
+          landmarks: hostelData.location_data.landmarks || '',
         },
       });
     } catch (error: any) {
@@ -106,29 +108,75 @@ export default function EditHostel() {
     setError('');
 
     try {
-      // Preparar los datos para la actualización
+      // Validar campos requeridos
+      if (!formData.name.trim()) {
+        setError('El nombre del albergue es requerido');
+        return;
+      }
+      if (!formData.phone.trim()) {
+        setError('El teléfono es requerido');
+        return;
+      }
+      if (!formData.location.address.trim()) {
+        setError('La dirección es requerida');
+        return;
+      }
+      if (!formData.location.city.trim()) {
+        setError('La ciudad es requerida');
+        return;
+      }
+      if (!formData.location.state.trim()) {
+        setError('El estado es requerido');
+        return;
+      }
+      if (!formData.location.zip_code.trim()) {
+        setError('El código postal es requerido');
+        return;
+      }
+
+      // Validar formato del teléfono
+      const phonePattern = /^\+\d{10,15}$/;
+      if (!phonePattern.test(formData.phone)) {
+        setError('El teléfono debe tener el formato +52811908593 (mínimo 10 dígitos, máximo 15)');
+        return;
+      }
+
+      // Preparar los datos para la actualización del albergue
       const updateData: HostelUpdateData = {
-        name: formData.name,
-        phone: formData.phone,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
         men_capacity: formData.men_capacity,
         women_capacity: formData.women_capacity,
         is_active: formData.is_active,
-        location: {
-          latitude: formData.location.latitude,
-          longitude: formData.location.longitude,
-          address: formData.location.address,
-          city: formData.location.city,
-          state: formData.location.state,
-          country: formData.location.country,
-          zip_code: formData.location.zip_code,
-          landmarks: formData.location.landmarks,
-        },
       };
       
+      // Actualizar el albergue
       await hostelsService.updateHostel(id, updateData);
+      
+      // Actualizar la ubicación por separado si hay cambios
+      if (hostel && hostel.location) {
+        const locationData: LocationRequest = {
+          latitude: formData.location.latitude.toFixed(6),
+          longitude: formData.location.longitude.toFixed(6),
+          address: formData.location.address.trim(),
+          city: formData.location.city.trim(),
+          state: formData.location.state.trim(),
+          country: formData.location.country.trim(),
+          zip_code: formData.location.zip_code.trim(),
+          landmarks: formData.location.landmarks?.trim() || '',
+        };
+        
+        await locationsService.updateLocation(hostel.location, locationData);
+      }
+      
       navigate(`/dashboard/hostels/detail/${id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar el albergue');
+      console.error('Error updating hostel:', err);
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          'Error al actualizar el albergue';
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }

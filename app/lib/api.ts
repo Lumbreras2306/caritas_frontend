@@ -79,14 +79,17 @@ export interface AdminUser {
 
 export interface Location {
   id: string;
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
   address: string;
   city: string;
   state: string;
   country: string;
   zip_code: string;
   landmarks?: string;
+  formatted_address?: string;
+  google_maps_url?: string;
+  timezone?: string;
 }
 
 export interface Hostel {
@@ -96,9 +99,23 @@ export interface Hostel {
   men_capacity: number;
   women_capacity: number;
   is_active: boolean;
-  location: Location;
+  location: string; // ID de la ubicación
+  location_data: Location; // Datos completos de la ubicación
+  coordinates?: [number, number]; // Array de coordenadas [lat, lng]
+  formatted_address?: string;
+  available_capacity?: {
+    men: number;
+    women: number;
+    total: number;
+  };
+  current_capacity?: number;
+  current_men_capacity?: number;
+  current_women_capacity?: number;
+  total_capacity?: number;
   created_at: string;
   updated_at: string;
+  created_by_name?: string;
+  image_url?: string;
 }
 
 export interface Service {
@@ -213,8 +230,8 @@ export interface HostelCreateData {
   women_capacity: number;
   is_active: boolean;
   location: {
-    latitude: number;
-    longitude: number;
+    latitude: string; // Cambiado a string según la API
+    longitude: string; // Cambiado a string según la API
     address: string;
     city: string;
     state: string;
@@ -230,29 +247,37 @@ export interface HostelUpdateData {
   men_capacity?: number;
   women_capacity?: number;
   is_active?: boolean;
-  location?: {
-    latitude?: number;
-    longitude?: number;
-    address?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    zip_code?: string;
-    landmarks?: string;
-  };
+  // location se omite en las actualizaciones porque el backend espera un UUID
+}
+
+export interface LocationRequest {
+  latitude: string;
+  longitude: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zip_code: string;
+  landmarks?: string;
+  timezone?: string;
 }
 
 export const hostelsService = {
-  getHostels: (params?: any) => 
-    api.get<PaginatedResponse<Hostel>>('/albergues/hostels/', { params }),
-  getHostel: (id: string) => 
-    api.get<Hostel>(`/albergues/hostels/${id}/`),
-  createHostel: (data: HostelCreateData) =>
-    api.post<Hostel>('/albergues/hostels/', data),
-  updateHostel: (id: string, data: HostelUpdateData) =>
-    api.patch<Hostel>(`/albergues/hostels/${id}/`, data),
-  deleteHostel: (id: string) =>
-    api.delete(`/albergues/hostels/${id}/`),
+  getHostels: (params?: any) => {
+    return api.get<PaginatedResponse<Hostel>>('/albergues/hostels/', { params });
+  },
+  getHostel: (id: string) => {
+    return api.get<Hostel>(`/albergues/hostels/${id}/`);
+  },
+  createHostel: (data: HostelCreateData) => {
+    return api.post<Hostel>('/albergues/hostels/', data);
+  },
+  updateHostel: (id: string, data: HostelUpdateData) => {
+    return api.patch<Hostel>(`/albergues/hostels/${id}/`, data);
+  },
+  deleteHostel: (id: string) => {
+    return api.delete(`/albergues/hostels/${id}/`);
+  },
   getNearbyHostels: (lat: number, lng: number, radius = 10) =>
     api.get(`/albergues/hostels/nearby/?lat=${lat}&lng=${lng}&radius=${radius}`),
   getAvailability: (id: string, date: string) =>
@@ -270,6 +295,20 @@ export const hostelsService = {
     api.patch(`/albergues/reservations/${id}/`, data),
   deleteReservation: (id: string) =>
     api.delete(`/albergues/reservations/${id}/`),
+  updateReservationStatus: (id: string, status: string) =>
+    api.patch(`/albergues/reservations/${id}/`, { status }),
+};
+
+export const locationsService = {
+  getLocation: (id: string) => {
+    return api.get<Location>(`/albergues/locations/${id}/`);
+  },
+  updateLocation: (id: string, data: LocationRequest) => {
+    return api.put<Location>(`/albergues/locations/${id}/`, data);
+  },
+  patchLocation: (id: string, data: Partial<LocationRequest>) => {
+    return api.patch<Location>(`/albergues/locations/${id}/`, data);
+  },
 };
 
 export const servicesService = {

@@ -57,29 +57,67 @@ export default function NewHostel() {
     setError('');
 
     try {
+      // Validar campos requeridos
+      if (!formData.name.trim()) {
+        setError('El nombre del albergue es requerido');
+        return;
+      }
+      if (!formData.phone.trim()) {
+        setError('El teléfono es requerido');
+        return;
+      }
+      if (!formData.location.address.trim()) {
+        setError('La dirección es requerida');
+        return;
+      }
+      if (!formData.location.city.trim()) {
+        setError('La ciudad es requerida');
+        return;
+      }
+      if (!formData.location.state.trim()) {
+        setError('El estado es requerido');
+        return;
+      }
+      if (!formData.location.zip_code.trim()) {
+        setError('El código postal es requerido');
+        return;
+      }
+
+      // Validar formato del teléfono
+      const phonePattern = /^\+\d{10,15}$/;
+      if (!phonePattern.test(formData.phone)) {
+        setError('El teléfono debe tener el formato +52811908593 (mínimo 10 dígitos, máximo 15)');
+        return;
+      }
+
       // Preparar los datos para la creación
       const createData: HostelCreateData = {
-        name: formData.name,
-        phone: formData.phone,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
         men_capacity: formData.men_capacity,
         women_capacity: formData.women_capacity,
         is_active: formData.is_active,
         location: {
-          latitude: formData.location.latitude,
-          longitude: formData.location.longitude,
-          address: formData.location.address,
-          city: formData.location.city,
-          state: formData.location.state,
-          country: formData.location.country,
-          zip_code: formData.location.zip_code,
-          landmarks: formData.location.landmarks,
+          latitude: formData.location.latitude.toFixed(6), // Limitar a 6 decimales
+          longitude: formData.location.longitude.toFixed(6), // Limitar a 6 decimales
+          address: formData.location.address.trim(),
+          city: formData.location.city.trim(),
+          state: formData.location.state.trim(),
+          country: formData.location.country.trim(),
+          zip_code: formData.location.zip_code.trim(),
+          landmarks: formData.location.landmarks?.trim() || '',
         },
       };
       
       await hostelsService.createHostel(createData);
       navigate('/dashboard/hostels/list');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al crear albergue');
+      console.error('Error creating hostel:', err);
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          'Error al crear albergue';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

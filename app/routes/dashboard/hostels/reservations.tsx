@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { hostelsService } from '~/lib/api';
+import { formatDate } from '~/lib/utils';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import { 
   CalendarDaysIcon,
@@ -19,20 +20,21 @@ import {
 
 interface HostelReservation {
   id: string;
-  user: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    phone_number: string;
-  };
-  hostel: {
-    id: string;
-    name: string;
-  };
-  check_in_date: string;
-  check_out_date: string;
-  gender: 'M' | 'F';
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+  user: string; // UUID del usuario
+  user_name: string;
+  user_phone: string;
+  hostel: string; // UUID del albergue
+  hostel_name: string;
+  hostel_location: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'rejected' | 'checked_in' | 'checked_out';
+  status_display: string;
+  type: 'individual' | 'group';
+  type_display: string;
+  arrival_date: string; // Fecha de llegada (formato date)
+  men_quantity?: number;
+  women_quantity?: number;
+  total_people: number;
+  created_by_name?: string;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +44,7 @@ export default function HostelReservations() {
   const [reservations, setReservations] = useState<HostelReservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled' | 'rejected' | 'checked_in' | 'checked_out'>('all');
   const [hostelFilter, setHostelFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
@@ -104,11 +106,15 @@ export default function HostelReservations() {
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      await hostelsService.updateReservation(id, { status: newStatus });
+      await hostelsService.updateReservationStatus(id, newStatus);
       loadReservations();
     } catch (error: any) {
       console.error('Error updating reservation status:', error);
-      alert('Error al actualizar el estado de la reserva. Intente nuevamente.');
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          'Error al cambiar el estado de la reserva. Intente nuevamente.';
+      alert(errorMessage);
     }
   };
 
@@ -126,21 +132,13 @@ export default function HostelReservations() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'bg-yellow-600';
-      case 'CONFIRMED': return 'bg-green-600';
-      case 'CANCELLED': return 'bg-red-600';
-      case 'COMPLETED': return 'bg-blue-600';
+      case 'pending': return 'bg-yellow-600';
+      case 'confirmed': return 'bg-green-600';
+      case 'cancelled': return 'bg-red-600';
+      case 'rejected': return 'bg-red-600';
+      case 'checked_in': return 'bg-blue-600';
+      case 'checked_out': return 'bg-gray-600';
       default: return 'bg-gray-600';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'Pendiente';
-      case 'CONFIRMED': return 'Confirmada';
-      case 'CANCELLED': return 'Cancelada';
-      case 'COMPLETED': return 'Completada';
-      default: return status;
     }
   };
 
@@ -208,10 +206,12 @@ export default function HostelReservations() {
                   className="input-field"
                 >
                   <option value="all">Todos</option>
-                  <option value="PENDING">Pendientes</option>
-                  <option value="CONFIRMED">Confirmadas</option>
-                  <option value="CANCELLED">Canceladas</option>
-                  <option value="COMPLETED">Completadas</option>
+                  <option value="pending">Pendientes</option>
+                  <option value="confirmed">Confirmadas</option>
+                  <option value="cancelled">Canceladas</option>
+                  <option value="rejected">Rechazadas</option>
+                  <option value="checked_in">Check-in</option>
+                  <option value="checked_out">Check-out</option>
                 </select>
               </div>
               
@@ -244,32 +244,52 @@ export default function HostelReservations() {
                 <div className="flex items-center gap-3 mb-2">
                   <BuildingOfficeIcon className="w-5 h-5 text-blue-400" />
                   <h3 className="text-lg font-semibold text-white">
-                    {reservation.user.first_name} {reservation.user.last_name}
+                    {reservation.user_name}
                   </h3>
                   <span className={`px-2 py-1 text-xs rounded-full text-white ${getStatusColor(reservation.status)}`}>
-                    {getStatusText(reservation.status)}
+                    {reservation.status_display}
                   </span>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-300">
                   <div>
-                    <p><strong>Albergue:</strong> {reservation.hostel.name}</p>
-                    <p><strong>Teléfono:</strong> {reservation.user.phone_number}</p>
+                    <p><strong>Albergue:</strong> {reservation.hostel_name}</p>
+                    <p><strong>Teléfono:</strong> {reservation.user_phone}</p>
                   </div>
                   <div>
-                    <p><strong>Check-in:</strong> {new Date(reservation.check_in_date).toLocaleDateString()}</p>
-                    <p><strong>Check-out:</strong> {new Date(reservation.check_out_date).toLocaleDateString()}</p>
+                    <p><strong>Fecha de llegada:</strong> {formatDate(reservation.arrival_date)}</p>
+                    <p><strong>Tipo:</strong> {reservation.type_display}</p>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-400">
                   <span className="flex items-center gap-1">
                     <UserGroupIcon className="w-4 h-4" />
-                    {reservation.gender === 'M' ? 'Hombre' : 'Mujer'}
+                    {reservation.total_people} persona{reservation.total_people !== 1 ? 's' : ''}
+                    {(() => {
+                      const men = reservation.men_quantity || 0;
+                      const women = reservation.women_quantity || 0;
+                      
+                      if (men > 0 || women > 0) {
+                        const parts = [];
+                        if (men > 0) {
+                          parts.push(`${men} hombre${men !== 1 ? 's' : ''}`);
+                        }
+                        if (women > 0) {
+                          parts.push(`${women} mujer${women !== 1 ? 'es' : ''}`);
+                        }
+                        return (
+                          <span className="ml-2 text-gray-500">
+                            ({parts.join(', ')})
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
                   </span>
                   <span className="flex items-center gap-1">
                     <CalendarDaysIcon className="w-4 h-4" />
-                    Creada: {new Date(reservation.created_at).toLocaleDateString()}
+                    Creada: {formatDate(reservation.created_at)}
                   </span>
                 </div>
               </div>
@@ -283,9 +303,9 @@ export default function HostelReservations() {
                   Ver
                 </Link>
                 
-                {reservation.status === 'PENDING' && (
+                {reservation.status === 'pending' && (
                   <button
-                    onClick={() => handleStatusChange(reservation.id, 'CONFIRMED')}
+                    onClick={() => handleStatusChange(reservation.id, 'confirmed')}
                     className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
                   >
                     <CheckCircleIcon className="w-4 h-4" />
@@ -293,19 +313,29 @@ export default function HostelReservations() {
                   </button>
                 )}
                 
-                {reservation.status === 'CONFIRMED' && (
+                {reservation.status === 'confirmed' && (
                   <button
-                    onClick={() => handleStatusChange(reservation.id, 'COMPLETED')}
+                    onClick={() => handleStatusChange(reservation.id, 'checked_in')}
                     className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
                   >
                     <ClockIcon className="w-4 h-4" />
-                    Completar
+                    Check-in
                   </button>
                 )}
                 
-                {(reservation.status === 'PENDING' || reservation.status === 'CONFIRMED') && (
+                {reservation.status === 'checked_in' && (
                   <button
-                    onClick={() => handleStatusChange(reservation.id, 'CANCELLED')}
+                    onClick={() => handleStatusChange(reservation.id, 'checked_out')}
+                    className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
+                  >
+                    <ClockIcon className="w-4 h-4" />
+                    Check-out
+                  </button>
+                )}
+                
+                {(reservation.status === 'pending' || reservation.status === 'confirmed') && (
+                  <button
+                    onClick={() => handleStatusChange(reservation.id, 'cancelled')}
                     className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
                   >
                     <XCircleIcon className="w-4 h-4" />

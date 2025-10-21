@@ -1,0 +1,173 @@
+/* Paleta de colores de Cáritas de Monterrey */
+:root {
+  /* Colores principales basados en PANTONE */
+  --caritas-primary: #2B5A8C;      /* PANTONE 302 C - Azul oscuro */
+  --caritas-secondary: #4A90A4;    /* PANTONE 320 C - Azul turquesa */
+  --caritas-accent: #87CEEB;       /* PANTONE 621 C - Verde claro */
+  --caritas-warm: #D2691E;         /* PANTONE 7655 C - Marrón */
+  --caritas-orange: #FF8C00;       /* PANTONE 1575 C - Naranja */
+  
+  /* Colores de fondo */
+  --caritas-bg-dark: #1a1a1a;
+  --caritas-bg-sidebar: #2d3748;
+  --caritas-bg-card: #374151;
+  
+  /* Colores de texto */
+  --caritas-text-primary: #ffffff;
+  --caritas-text-secondary: #a0aec0;
+  --caritas-text-muted: #718096;
+  
+  /* Colores de borde */
+  --caritas-border: #4a5568;
+  --caritas-border-light: #718096;
+}
+
+/* Aplicar colores a elementos comunes */
+.bg-caritas-primary {
+  background-color: var(--caritas-primary);
+}
+
+.bg-caritas-secondary {
+  background-color: var(--caritas-secondary);
+}
+
+.bg-caritas-accent {
+  background-color: var(--caritas-accent);
+}
+
+.bg-caritas-warm {
+  background-color: var(--caritas-warm);
+}
+
+.bg-caritas-orange {
+  background-color: var(--caritas-orange);
+}
+
+.text-caritas-primary {
+  color: var(--caritas-primary);
+}
+
+.text-caritas-secondary {
+  color: var(--caritas-secondary);
+}
+
+.text-caritas-accent {
+  color: var(--caritas-accent);
+}
+
+.border-caritas {
+  border-color: var(--caritas-border);
+}
+
+.border-caritas-light {
+  border-color: var(--caritas-border-light);
+}
+
+/* Botones con colores de Cáritas */
+.btn-caritas-primary {
+  background-color: var(--caritas-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.btn-caritas-primary:hover {
+  background-color: var(--caritas-secondary);
+  transform: translateY(-1px);
+}
+
+.btn-caritas-secondary {
+  background-color: var(--caritas-secondary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.btn-caritas-secondary:hover {
+  background-color: var(--caritas-primary);
+  transform: translateY(-1px);
+}
+
+/* Cards con estilo Cáritas */
+.card-caritas {
+  background-color: var(--caritas-bg-card);
+  border: 1px solid var(--caritas-border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Estados de éxito, error, advertencia con colores Cáritas */
+.alert-caritas-success {
+  background-color: var(--caritas-accent);
+  color: white;
+  border: 1px solid var(--caritas-accent);
+}
+
+.alert-caritas-warning {
+  background-color: var(--caritas-orange);
+  color: white;
+  border: 1px solid var(--caritas-orange);
+}
+
+.alert-caritas-error {
+  background-color: var(--caritas-warm);
+  color: white;
+  border: 1px solid var(--caritas-warm);
+}
+
+/* Progress bars con colores Cáritas */
+.progress-caritas {
+  background-color: var(--caritas-bg-card);
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.progress-caritas-fill {
+  background-color: var(--caritas-secondary);
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Inputs con estilo Cáritas */
+.input-caritas {
+  background-color: var(--caritas-bg-card);
+  border: 1px solid var(--caritas-border);
+  color: var(--caritas-text-primary);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.input-caritas:focus {
+  border-color: var(--caritas-secondary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+}
+
+/* Tablas con estilo Cáritas */
+.table-caritas {
+  background-color: var(--caritas-bg-card);
+  border: 1px solid var(--caritas-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table-caritas th {
+  background-color: var(--caritas-primary);
+  color: white;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+}
+
+.table-caritas td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--caritas-border);
+}
+
+.table-caritas tr:hover {
+  background-color: rgba(74, 144, 164, 0.1);
+}

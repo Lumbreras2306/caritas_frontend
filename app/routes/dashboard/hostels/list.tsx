@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { hostelsService, type Hostel } from '~/lib/api';
+import { formatDate } from '~/lib/utils';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import ConfirmationModal from '~/components/modals/ConfirmationModal';
 import { 
@@ -50,6 +51,11 @@ export default function HostelsList() {
       }
       
       const response = await hostelsService.getHostels(params);
+      console.log('🔍 Datos recibidos del backend (Hostels List):', response.data);
+      console.log('📋 Albergues recibidos:', response.data.results);
+      if (response.data.results.length > 0) {
+        console.log('📍 Ubicación del primer albergue:', response.data.results[0].location);
+      }
       setHostels(response.data.results);
       setTotalCount(response.data.count);
     } catch (error: any) {
@@ -92,15 +98,6 @@ export default function HostelsList() {
     setDeleteModal({ isOpen: false, hostelId: null, hostelName: '' });
   };
 
-  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
-    try {
-      await hostelsService.updateHostel(id, { is_active: !currentStatus });
-      loadHostels();
-    } catch (error: any) {
-      console.error('Error updating hostel status:', error);
-      setError('Error al cambiar el estado del albergue. Intente nuevamente.');
-    }
-  };
 
   const totalPages = Math.ceil(totalCount / 12);
 
@@ -199,7 +196,7 @@ export default function HostelsList() {
                   <div>
                     <div className="flex items-start gap-2 mb-2">
                       <MapPinIcon className="w-4 h-4 mt-1 flex-shrink-0 text-gray-400" />
-                      <span>{hostel.location.address}, {hostel.location.city}, {hostel.location.state}</span>
+                      <span>{hostel.location_data.address}, {hostel.location_data.city}, {hostel.location_data.state}</span>
                     </div>
                     <p className="flex items-center gap-2">
                       <span className="text-gray-400">📞</span> {hostel.phone}
@@ -212,25 +209,13 @@ export default function HostelsList() {
                       <span className="text-sm">Mujeres: <strong>{hostel.women_capacity}</strong></span>
                     </div>
                     <p className="text-gray-400 text-xs mt-2">
-                      Creado: {new Date(hostel.created_at).toLocaleDateString()}
+                      Creado: {formatDate(hostel.created_at)}
                     </p>
                   </div>
                 </div>
               </div>
               
               <div className="flex flex-col sm:flex-row gap-2">
-                <button
-                  onClick={() => handleToggleStatus(hostel.id, hostel.is_active)}
-                  className={`px-3 py-2 text-sm rounded transition-colors ${
-                    hostel.is_active 
-                      ? 'bg-gray-600 hover:bg-gray-700 text-white' 
-                      : 'bg-gray-500 hover:bg-gray-600 text-white'
-                  }`}
-                  title={hostel.is_active ? 'Desactivar' : 'Activar'}
-                >
-                  {hostel.is_active ? 'Desactivar' : 'Activar'}
-                </button>
-                
                 <Link
                   to={`/dashboard/hostels/detail/${hostel.id}`}
                   className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors flex items-center justify-center gap-1 text-sm"

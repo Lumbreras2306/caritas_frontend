@@ -50,6 +50,14 @@ type Pages = {
   "/dashboard/hostels/reservations": {
     params: {};
   };
+  "/dashboard/hostels/reservations/detail/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/dashboard/hostels/statistics": {
+    params: {};
+  };
   "/dashboard/services": {
     params: {};
   };
@@ -73,7 +81,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations" | "/404";
+    page: "/" | "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/hostels/reservations/detail/:id" | "/dashboard/hostels/statistics" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations" | "/404";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -81,7 +89,7 @@ type RouteFiles = {
   };
   "routes/dashboard/layout.tsx": {
     id: "routes/dashboard/layout";
-    page: "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations";
+    page: "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/hostels/reservations/detail/:id" | "/dashboard/hostels/statistics" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations";
   };
   "routes/dashboard/index.tsx": {
     id: "routes/dashboard/index";
@@ -126,6 +134,14 @@ type RouteFiles = {
   "routes/dashboard/hostels/reservations.tsx": {
     id: "routes/dashboard/hostels/reservations";
     page: "/dashboard/hostels/reservations";
+  };
+  "routes/dashboard/hostels/reservations/detail.tsx": {
+    id: "routes/dashboard/hostels/reservations/detail";
+    page: "/dashboard/hostels/reservations/detail/:id";
+  };
+  "routes/dashboard/hostels/statistics.tsx": {
+    id: "routes/dashboard/hostels/statistics";
+    page: "/dashboard/hostels/statistics";
   };
   "routes/dashboard/services/index.tsx": {
     id: "routes/dashboard/services/index";

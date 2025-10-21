@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router';
 import { hostelsService, type Hostel } from '~/lib/api';
+import { formatCoordinate, formatDate } from '~/lib/utils';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import ConfirmationModal from '~/components/modals/ConfirmationModal';
+import ReadOnlyMap from '~/components/maps/ReadOnlyMap';
 import { 
   ArrowLeftIcon,
   PencilIcon,
@@ -23,9 +25,6 @@ export default function HostelDetail() {
   const [hostel, setHostel] = useState<Hostel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [availabilityDate, setAvailabilityDate] = useState('');
-  const [availability, setAvailability] = useState<any>(null);
-  const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -45,19 +44,6 @@ export default function HostelDetail() {
     }
   };
 
-  const checkAvailability = async () => {
-    if (!id || !availabilityDate) return;
-    
-    try {
-      setLoadingAvailability(true);
-      const response = await hostelsService.getAvailability(id, availabilityDate);
-      setAvailability(response.data);
-    } catch (error: any) {
-      console.error('Error checking availability:', error);
-    } finally {
-      setLoadingAvailability(false);
-    }
-  };
 
   const handleDeleteClick = () => {
     setDeleteModal(true);
@@ -83,27 +69,10 @@ export default function HostelDetail() {
     setDeleteModal(false);
   };
 
-  const handleToggleStatus = async () => {
-    if (!id || !hostel) return;
-    
-    try {
-      await hostelsService.updateHostel(id, { is_active: !hostel.is_active });
-      loadHostel();
-    } catch (error: any) {
-      console.error('Error updating hostel status:', error);
-      setError('Error al cambiar el estado del albergue. Intente nuevamente.');
-    }
-  };
 
   useEffect(() => {
     loadHostel();
   }, [id]);
-
-  useEffect(() => {
-    if (availabilityDate) {
-      checkAvailability();
-    }
-  }, [availabilityDate]);
 
   if (loading) {
     return (
@@ -196,16 +165,6 @@ export default function HostelDetail() {
                         Inactivo
                       </span>
                     )}
-                    <button
-                      onClick={handleToggleStatus}
-                      className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                        hostel.is_active 
-                          ? 'bg-yellow-600 hover:bg-yellow-700 text-white' 
-                          : 'bg-green-600 hover:bg-green-700 text-white'
-                      }`}
-                    >
-                      {hostel.is_active ? 'Desactivar' : 'Activar'}
-                    </button>
                   </div>
                 </div>
                 
@@ -213,7 +172,7 @@ export default function HostelDetail() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">Fecha de Creación</label>
                   <p className="text-white flex items-center gap-2">
                     <CalendarDaysIcon className="w-4 h-4" />
-                    {new Date(hostel.created_at).toLocaleDateString()}
+                    {formatDate(hostel.created_at)}
                   </p>
                 </div>
               </div>
@@ -230,12 +189,25 @@ export default function HostelDetail() {
                 <div className="bg-gray-700 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-gray-300 text-sm">Capacidad Hombres</span>
-                    <span className="text-2xl font-bold text-white">{hostel.men_capacity}</span>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-white">{hostel.men_capacity}</span>
+                      <span className="text-sm text-gray-400 ml-2">máx</span>
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">En uso:</span>
+                      <span className="text-blue-400 font-medium">
+                        {hostel.current_men_capacity || 0} / {hostel.men_capacity || 0}
+                      </span>
+                    </div>
                   </div>
                   <div className="w-full bg-gray-600 rounded-full h-2">
                     <div 
                       className="bg-blue-500 h-2 rounded-full" 
-                      style={{ width: `${Math.min((hostel.men_capacity / 50) * 100, 100)}%` }}
+                      style={{ 
+                        width: `${Math.min(((hostel.current_men_capacity || 0) / (hostel.men_capacity || 1)) * 100, 100)}%` 
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -243,23 +215,53 @@ export default function HostelDetail() {
                 <div className="bg-gray-700 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-gray-300 text-sm">Capacidad Mujeres</span>
-                    <span className="text-2xl font-bold text-white">{hostel.women_capacity}</span>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-white">{hostel.women_capacity}</span>
+                      <span className="text-sm text-gray-400 ml-2">máx</span>
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">En uso:</span>
+                      <span className="text-pink-400 font-medium">
+                        {hostel.current_women_capacity || 0} / {hostel.women_capacity || 0}
+                      </span>
+                    </div>
                   </div>
                   <div className="w-full bg-gray-600 rounded-full h-2">
                     <div 
                       className="bg-pink-500 h-2 rounded-full" 
-                      style={{ width: `${Math.min((hostel.women_capacity / 50) * 100, 100)}%` }}
+                      style={{ 
+                        width: `${Math.min(((hostel.current_women_capacity || 0) / (hostel.women_capacity || 1)) * 100, 100)}%` 
+                      }}
                     ></div>
                   </div>
                 </div>
               </div>
               
               <div className="mt-4 p-3 bg-gray-700 rounded-lg">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-gray-300">Capacidad Total</span>
-                  <span className="text-xl font-bold text-white">
-                    {hostel.men_capacity + hostel.women_capacity} personas
+                  <div className="text-right">
+                    <span className="text-xl font-bold text-white">
+                      {hostel.men_capacity + hostel.women_capacity} personas
+                    </span>
+                    <span className="text-sm text-gray-400 ml-2">máx</span>
+                  </div>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">En uso:</span>
+                  <span className="text-green-400 font-medium">
+                    {(hostel.current_men_capacity || 0) + (hostel.current_women_capacity || 0)} / {(hostel.men_capacity || 0) + (hostel.women_capacity || 0)}
                   </span>
+                </div>
+                <div className="w-full bg-gray-600 rounded-full h-2 mt-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full" 
+                    style={{ 
+                      width: `${Math.min((((hostel.current_men_capacity || 0) + (hostel.current_women_capacity || 0)) / ((hostel.men_capacity || 0) + (hostel.women_capacity || 0) || 1)) * 100, 100)}%` 
+                    }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -274,42 +276,72 @@ export default function HostelDetail() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Dirección</label>
-                  <p className="text-white">{hostel.location.address}</p>
+                  <p className="text-white">{hostel.location_data.address}</p>
                 </div>
                 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Ciudad</label>
-                    <p className="text-white">{hostel.location.city}</p>
+                    <p className="text-white">{hostel.location_data.city}</p>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Estado</label>
-                    <p className="text-white">{hostel.location.state}</p>
+                    <p className="text-white">{hostel.location_data.state}</p>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Código Postal</label>
-                    <p className="text-white">{hostel.location.zip_code}</p>
+                    <p className="text-white">{hostel.location_data.zip_code}</p>
                   </div>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Latitud</label>
-                    <p className="text-white">{hostel.location.latitude}</p>
+                    <p className="text-white font-mono text-sm">{formatCoordinate(hostel.location_data.latitude)}</p>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Longitud</label>
-                    <p className="text-white">{hostel.location.longitude}</p>
+                    <p className="text-white font-mono text-sm">{formatCoordinate(hostel.location_data.longitude)}</p>
                   </div>
                 </div>
                 
-                {hostel.location.landmarks && (
+                {hostel.location_data.landmarks && (
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Referencias</label>
-                    <p className="text-white">{hostel.location.landmarks}</p>
+                    <p className="text-white">{hostel.location_data.landmarks}</p>
+                  </div>
+                )}
+                
+                {hostel.location_data.formatted_address && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Dirección Completa</label>
+                    <p className="text-white text-sm">{hostel.location_data.formatted_address}</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Mapa de la ubicación */}
+              <div className="mt-6">
+                <ReadOnlyMap
+                  latitude={parseFloat(hostel.location_data.latitude)}
+                  longitude={parseFloat(hostel.location_data.longitude)}
+                  height="300px"
+                  title="Ubicación del albergue"
+                />
+                {hostel.location_data.google_maps_url && (
+                  <div className="mt-3">
+                    <a
+                      href={hostel.location_data.google_maps_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                    >
+                      <MapPinIcon className="w-4 h-4" />
+                      Abrir en Google Maps
+                    </a>
                   </div>
                 )}
               </div>
@@ -318,48 +350,6 @@ export default function HostelDetail() {
 
           {/* Panel Lateral */}
           <div className="space-y-6">
-            {/* Consulta de Disponibilidad */}
-            <div className="card">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <ClockIcon className="w-5 h-5 text-yellow-400" />
-                Consultar Disponibilidad
-              </h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Fecha</label>
-                  <input
-                    type="date"
-                    value={availabilityDate}
-                    onChange={(e) => setAvailabilityDate(e.target.value)}
-                    className="input-field"
-                    min={new Date().toISOString().split('T')[0]}
-                  />
-                </div>
-                
-                {availability && (
-                  <div className="bg-gray-700 rounded-lg p-4">
-                    <h4 className="text-white font-medium mb-2">Disponibilidad</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-300">Hombres disponibles:</span>
-                        <span className="text-white font-medium">{availability.men_available}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-300">Mujeres disponibles:</span>
-                        <span className="text-white font-medium">{availability.women_available}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {loadingAvailability && (
-                  <div className="flex justify-center">
-                    <LoadingSpinner size="sm" />
-                  </div>
-                )}
-              </div>
-            </div>
 
             {/* Acciones */}
             <div className="card">
@@ -404,12 +394,12 @@ export default function HostelDetail() {
                 
                 <div className="flex justify-between">
                   <span className="text-gray-300">Creado:</span>
-                  <span className="text-white">{new Date(hostel.created_at).toLocaleDateString()}</span>
+                  <span className="text-white">{formatDate(hostel.created_at)}</span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span className="text-gray-300">Última actualización:</span>
-                  <span className="text-white">{new Date(hostel.updated_at).toLocaleDateString()}</span>
+                  <span className="text-white">{formatDate(hostel.updated_at)}</span>
                 </div>
               </div>
             </div>
