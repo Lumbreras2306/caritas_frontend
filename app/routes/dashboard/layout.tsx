@@ -36,6 +36,10 @@ export default function DashboardLayout() {
     { name: 'Inventario', href: '/dashboard/inventory', icon: ArchiveBoxIcon },
   ];
 
+  const adminNavigation = [
+    { name: 'Administradores', href: '/dashboard/users/admins', icon: UserGroupIcon },
+  ];
+
   const handleLogout = async () => {
     await logout();
   };
@@ -43,7 +47,7 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 border-r border-gray-700">
+      <div className="fixed inset-y-0 left-0 z-50 w-56 bg-gray-800 border-r border-gray-700">
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 bg-red-600 border-b border-red-700">
@@ -56,26 +60,58 @@ export default function DashboardLayout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.href;
-              
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`nav-link flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                    isActive 
-                      ? 'bg-red-600 text-white' 
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
+          <nav className="flex-1 px-4 py-6 space-y-4">
+            {/* Navegación principal */}
+            <div className="space-y-2">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.href;
+                
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`nav-link flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                      isActive 
+                        ? 'bg-red-600 text-white' 
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Separador */}
+            <div className="border-t border-gray-700 my-4"></div>
+
+            {/* Navegación de administración */}
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold px-3">
+                Administración
+              </p>
+              {adminNavigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.href;
+                
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`nav-link flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                      isActive 
+                        ? 'bg-red-600 text-white' 
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </nav>
 
           {/* User Info & Logout */}
@@ -108,8 +144,8 @@ export default function DashboardLayout() {
       </div>
 
       {/* Main Content */}
-      <div className="pl-64">
-        <main className="py-8">
+      <div className="pl-56">
+        <main className="py-8 px-6">
           <Outlet />
         </main>
       </div>

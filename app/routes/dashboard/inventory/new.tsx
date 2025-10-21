@@ -1,19 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { servicesService } from '~/lib/api';
+import { inventoryService } from '~/lib/api';
 import Button from '~/components/ui/Button';
 
-export default function NewService() {
+export default function NewInventoryItem() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: 0,
-    reservation_type: 'individual' as 'individual' | 'group',
-    needs_approval: false,
-    max_time: 60,
+    category: '',
+    unit: '',
     is_active: true,
   });
 
@@ -23,30 +21,30 @@ export default function NewService() {
     setError('');
 
     try {
-      await servicesService.createService(formData);
-      navigate('/dashboard/services/list');
+      await inventoryService.createItem(formData);
+      navigate('/dashboard/inventory/list');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al crear servicio');
+      setError(err.response?.data?.message || 'Error al crear artículo');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
 
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : type === 'number' ? parseFloat(value) : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
   return (
     <div className="px-4 sm:px-0 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white">Nuevo Servicio</h1>
-        <p className="text-gray-300 mt-2">Crear un nuevo servicio disponible para los albergues</p>
+        <h1 className="text-3xl font-bold text-white">Nuevo Artículo</h1>
+        <p className="text-gray-300 mt-2">Agregar un nuevo artículo al catálogo de inventario</p>
       </div>
 
       <div className="card">
@@ -59,7 +57,7 @@ export default function NewService() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nombre del Servicio *
+              Nombre del Artículo *
             </label>
             <input
               type="text"
@@ -68,7 +66,7 @@ export default function NewService() {
               onChange={handleChange}
               required
               className="input-field"
-              placeholder="Ej: Comedor, Duchas, Lavandería"
+              placeholder="Ej: Jabón antibacterial, Arroz, Cobijas"
             />
           </div>
 
@@ -81,74 +79,45 @@ export default function NewService() {
               value={formData.description}
               onChange={handleChange}
               required
-              rows={4}
+              rows={3}
               className="input-field"
-              placeholder="Describe el servicio que se ofrece"
+              placeholder="Descripción detallada del artículo"
             />
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Precio *
+                Categoría *
               </label>
               <input
-                type="number"
-                name="price"
-                value={formData.price}
+                type="text"
+                name="category"
+                value={formData.category}
                 onChange={handleChange}
                 required
-                min="0"
-                step="0.01"
                 className="input-field"
-                placeholder="0.00"
+                placeholder="Ej: Higiene, Alimentos, Ropa"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Tiempo Máximo (minutos) *
+                Unidad de Medida *
               </label>
               <input
-                type="number"
-                name="max_time"
-                value={formData.max_time}
+                type="text"
+                name="unit"
+                value={formData.unit}
                 onChange={handleChange}
                 required
-                min="1"
                 className="input-field"
-                placeholder="60"
+                placeholder="Ej: piezas, kg, litros"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Tipo de Reserva *
-            </label>
-            <select
-              name="reservation_type"
-              value={formData.reservation_type}
-              onChange={handleChange}
-              className="input-field"
-            >
-              <option value="individual">Individual</option>
-              <option value="group">Grupal</option>
-            </select>
-          </div>
-
-          <div className="space-y-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                name="needs_approval"
-                checked={formData.needs_approval}
-                onChange={handleChange}
-                className="rounded"
-              />
-              <span className="text-gray-300">Requiere aprobación del administrador</span>
-            </label>
-
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -157,7 +126,7 @@ export default function NewService() {
                 onChange={handleChange}
                 className="rounded"
               />
-              <span className="text-gray-300">Servicio activo</span>
+              <span className="text-gray-300">Artículo activo</span>
             </label>
           </div>
 
@@ -167,11 +136,11 @@ export default function NewService() {
               loading={loading}
               className="bg-red-600 hover:bg-red-700"
             >
-              Crear Servicio
+              Crear Artículo
             </Button>
             <Button
               type="button"
-              onClick={() => navigate('/dashboard/services/list')}
+              onClick={() => navigate('/dashboard/inventory/list')}
               className="bg-gray-600 hover:bg-gray-700"
             >
               Cancelar

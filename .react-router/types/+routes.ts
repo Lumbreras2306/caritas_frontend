@@ -19,19 +19,36 @@ type Pages = {
   "/dashboard/users": {
     params: {};
   };
+  "/dashboard/users/list": {
+    params: {};
+  };
+  "/dashboard/users/new": {
+    params: {};
+  };
   "/dashboard/users/preregisters": {
     params: {};
   };
   "/dashboard/hostels": {
     params: {};
   };
+  "/dashboard/hostels/list": {
+    params: {};
+  };
   "/dashboard/hostels/new": {
     params: {};
   };
-  "/dashboard/hostels/:id": {
+  "/dashboard/hostels/edit/:id": {
     params: {
       "id": string;
     };
+  };
+  "/dashboard/hostels/detail/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/dashboard/hostels/reservations": {
+    params: {};
   };
   "/dashboard/services": {
     params: {};
@@ -48,12 +65,15 @@ type Pages = {
   "/dashboard/reservations": {
     params: {};
   };
+  "/404": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/dashboard" | "/dashboard/users" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/new" | "/dashboard/hostels/:id" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations";
+    page: "/" | "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations" | "/404";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -61,7 +81,7 @@ type RouteFiles = {
   };
   "routes/dashboard/layout.tsx": {
     id: "routes/dashboard/layout";
-    page: "/dashboard" | "/dashboard/users" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/new" | "/dashboard/hostels/:id" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations";
+    page: "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/services" | "/dashboard/services/new" | "/dashboard/inventory" | "/dashboard/inventory/items" | "/dashboard/reservations";
   };
   "routes/dashboard/index.tsx": {
     id: "routes/dashboard/index";
@@ -71,6 +91,14 @@ type RouteFiles = {
     id: "routes/dashboard/users/index";
     page: "/dashboard/users";
   };
+  "routes/dashboard/users/list.tsx": {
+    id: "routes/dashboard/users/list";
+    page: "/dashboard/users/list";
+  };
+  "routes/dashboard/users/new.tsx": {
+    id: "routes/dashboard/users/new";
+    page: "/dashboard/users/new";
+  };
   "routes/dashboard/users/preregisters.tsx": {
     id: "routes/dashboard/users/preregisters";
     page: "/dashboard/users/preregisters";
@@ -79,13 +107,25 @@ type RouteFiles = {
     id: "routes/dashboard/hostels/index";
     page: "/dashboard/hostels";
   };
+  "routes/dashboard/hostels/list.tsx": {
+    id: "routes/dashboard/hostels/list";
+    page: "/dashboard/hostels/list";
+  };
   "routes/dashboard/hostels/new.tsx": {
     id: "routes/dashboard/hostels/new";
     page: "/dashboard/hostels/new";
   };
+  "routes/dashboard/hostels/edit.tsx": {
+    id: "routes/dashboard/hostels/edit";
+    page: "/dashboard/hostels/edit/:id";
+  };
   "routes/dashboard/hostels/detail.tsx": {
     id: "routes/dashboard/hostels/detail";
-    page: "/dashboard/hostels/:id";
+    page: "/dashboard/hostels/detail/:id";
+  };
+  "routes/dashboard/hostels/reservations.tsx": {
+    id: "routes/dashboard/hostels/reservations";
+    page: "/dashboard/hostels/reservations";
   };
   "routes/dashboard/services/index.tsx": {
     id: "routes/dashboard/services/index";
@@ -106,5 +146,9 @@ type RouteFiles = {
   "routes/dashboard/reservations/index.tsx": {
     id: "routes/dashboard/reservations/index";
     page: "/dashboard/reservations";
+  };
+  "routes/404.tsx": {
+    id: "routes/404";
+    page: "/404";
   };
 };

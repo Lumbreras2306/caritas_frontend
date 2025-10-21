@@ -1,9 +1,51 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '~/lib/auth';
+import { usersService, hostelsService, servicesService, inventoryService } from '~/lib/api';
 import { BuildingOfficeIcon, WrenchScrewdriverIcon, ArchiveBoxIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import LoadingSpinner from '~/components/ui/LoadingSpinner';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [stats, setStats] = useState({
+    admins: 0,
+    customers: 0,
+    preRegisters: 0,
+    hostels: 0,
+    services: 0,
+    inventoryItems: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const [adminsRes, customersRes, preRegistersRes, hostelsRes, servicesRes, inventoryRes] = await Promise.all([
+          usersService.getAdmins({ page_size: 1 }),
+          usersService.getCustomers({ page_size: 1 }),
+          usersService.getPreRegisters({ page_size: 1 }),
+          hostelsService.getHostels({ page_size: 1 }),
+          servicesService.getServices({ page_size: 1 }),
+          inventoryService.getItems({ page_size: 1 }),
+        ]);
+
+        setStats({
+          admins: adminsRes.data.count,
+          customers: customersRes.data.count,
+          preRegisters: preRegistersRes.data.count,
+          hostels: hostelsRes.data.count,
+          services: servicesRes.data.count,
+          inventoryItems: inventoryRes.data.count,
+        });
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, []);
 
   const quickActions = [
     {
@@ -12,6 +54,7 @@ export default function Dashboard() {
       href: '/dashboard/hostels',
       icon: BuildingOfficeIcon,
       color: 'bg-blue-600',
+      count: stats.hostels,
     },
     {
       name: 'Usuarios',
@@ -19,6 +62,7 @@ export default function Dashboard() {
       href: '/dashboard/users',
       icon: UserGroupIcon,
       color: 'bg-red-600',
+      count: stats.customers,
     },
     {
       name: 'Servicios',
@@ -26,6 +70,7 @@ export default function Dashboard() {
       href: '/dashboard/services',
       icon: WrenchScrewdriverIcon,
       color: 'bg-yellow-600',
+      count: stats.services,
     },
     {
       name: 'Inventario',
@@ -33,8 +78,17 @@ export default function Dashboard() {
       href: '/dashboard/inventory',
       icon: ArchiveBoxIcon,
       color: 'bg-purple-600',
+      count: stats.inventoryItems,
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 sm:px-0">
@@ -44,11 +98,11 @@ export default function Dashboard() {
             ¡Bienvenido, {user?.full_name || user?.username}!
           </h1>
           <p className="mt-2 text-gray-300">
-            Panel de administración del sistema Cáritas de Monterrey
+            Sistema de administración Cáritas de Monterrey
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (
@@ -64,56 +118,46 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold text-white mb-2">
                   {action.name}
                 </h3>
-                <p className="text-gray-300 text-sm">
+                <p className="text-gray-300 text-sm mb-3">
                   {action.description}
                 </p>
+                <div className="text-3xl font-bold text-white">
+                  {action.count}
+                </div>
               </Link>
             );
           })}
         </div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2">
           <div className="card">
             <h3 className="text-lg font-semibold text-white mb-4">
-              Estado del Sistema
+              📝 Pre-registros Pendientes
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-center text-sm text-gray-300">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                Sistema funcionando correctamente
+            <div className="text-center">
+              <div className="text-4xl font-bold text-yellow-400 mb-2">
+                {stats.preRegisters}
               </div>
-              <div className="flex items-center text-sm text-gray-300">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                Base de datos conectada
-              </div>
-              <div className="flex items-center text-sm text-gray-300">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
-                API funcionando
-              </div>
+              <Link
+                to="/dashboard/users/preregisters"
+                className="text-blue-400 hover:text-blue-300 text-sm"
+              >
+                Ver pre-registros →
+              </Link>
             </div>
           </div>
 
           <div className="card">
             <h3 className="text-lg font-semibold text-white mb-4">
-              Enlaces Rápidos
+              📊 Total de Usuarios
             </h3>
-            <div className="space-y-2">
-              <a
-                href="http://localhost:8000/swagger/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-red-400 hover:text-red-300 text-sm transition-colors"
-              >
-                📖 Documentación API
-              </a>
-              <a
-                href="http://localhost:8000/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-red-400 hover:text-red-300 text-sm transition-colors"
-              >
-                🖥️ Backend Admin
-              </a>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-green-400 mb-2">
+                {stats.customers + stats.admins}
+              </div>
+              <p className="text-gray-400 text-sm">
+                Usuarios en el sistema
+              </p>
             </div>
           </div>
         </div>
