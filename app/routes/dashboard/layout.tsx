@@ -37,7 +37,7 @@ export default function DashboardLayout() {
   ];
 
   const adminNavigation = [
-    { name: 'Administradores', href: '/dashboard/users/admins', icon: UserGroupIcon },
+    { name: 'Administradores', href: '/dashboard/admins', icon: UserGroupIcon },
   ];
 
   const handleLogout = async () => {

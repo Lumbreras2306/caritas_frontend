@@ -1,37 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { inventoryService, type Inventory } from '~/lib/api';
+import { inventoryService } from '~/lib/api';
 import Button from '~/components/ui/Button';
 
-export default function NewInventory() {
+export default function NewItem() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [hostels, setHostels] = useState<{id: string, name: string}[]>([]);
   const [formData, setFormData] = useState({
-    hostel: '',
     name: '',
     description: '',
+    category: '',
+    unit: '',
     is_active: true,
   });
-
-  const loadHostels = async () => {
-    try {
-      // Aquí deberías cargar los albergues desde el servicio correspondiente
-      // Por ahora usamos datos mock
-      setHostels([
-        { id: '1', name: 'Casa San José' },
-        { id: '2', name: 'Albergue San Juan' },
-        { id: '3', name: 'Refugio San Pedro' }
-      ]);
-    } catch (error) {
-      console.error('Error loading hostels:', error);
-    }
-  };
-
-  useEffect(() => {
-    loadHostels();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,16 +21,16 @@ export default function NewInventory() {
     setError('');
 
     try {
-      await inventoryService.createInventory(formData);
-      navigate('/dashboard/inventory/list');
+      await inventoryService.createItem(formData);
+      navigate('/dashboard/inventory/items');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al crear inventario');
+      setError(err.response?.data?.message || 'Error al crear artículo');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
 
@@ -61,8 +43,8 @@ export default function NewInventory() {
   return (
     <div className="px-4 sm:px-0 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white">Nuevo Inventario</h1>
-        <p className="text-gray-300 mt-2">Crear un nuevo inventario para un albergue</p>
+        <h1 className="text-3xl font-bold text-white">Nuevo Artículo</h1>
+        <p className="text-gray-300 mt-2">Agregar un nuevo artículo al catálogo</p>
       </div>
 
       <div className="card">
@@ -75,27 +57,7 @@ export default function NewInventory() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Albergue *
-            </label>
-            <select
-              name="hostel"
-              value={formData.hostel}
-              onChange={handleChange}
-              required
-              className="input-field"
-            >
-              <option value="">Seleccionar albergue</option>
-              {hostels.map((hostel) => (
-                <option key={hostel.id} value={hostel.id}>
-                  {hostel.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nombre del Inventario *
+              Nombre del Artículo *
             </label>
             <input
               type="text"
@@ -104,7 +66,7 @@ export default function NewInventory() {
               onChange={handleChange}
               required
               className="input-field"
-              placeholder="Ej: Inventario Principal, Inventario de Emergencia"
+              placeholder="Ej: Jabón antibacterial, Arroz, Cobijas"
             />
           </div>
 
@@ -119,8 +81,40 @@ export default function NewInventory() {
               required
               rows={3}
               className="input-field"
-              placeholder="Descripción del inventario y su propósito"
+              placeholder="Descripción detallada del artículo"
             />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Categoría *
+              </label>
+              <input
+                type="text"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className="input-field"
+                placeholder="Ej: Higiene, Alimentos, Ropa"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Unidad de Medida *
+              </label>
+              <input
+                type="text"
+                name="unit"
+                value={formData.unit}
+                onChange={handleChange}
+                required
+                className="input-field"
+                placeholder="Ej: piezas, kg, litros"
+              />
+            </div>
           </div>
 
           <div>
@@ -132,7 +126,7 @@ export default function NewInventory() {
                 onChange={handleChange}
                 className="rounded"
               />
-              <span className="text-gray-300">Inventario activo</span>
+              <span className="text-gray-300">Artículo activo</span>
             </label>
           </div>
 
@@ -142,11 +136,11 @@ export default function NewInventory() {
               loading={loading}
               className="bg-red-600 hover:bg-red-700"
             >
-              Crear Inventario
+              Crear Artículo
             </Button>
             <Button
               type="button"
-              onClick={() => navigate('/dashboard/inventory/list')}
+              onClick={() => navigate('/dashboard/inventory/items')}
               className="bg-gray-600 hover:bg-gray-700"
             >
               Cancelar

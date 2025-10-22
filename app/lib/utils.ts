@@ -33,7 +33,16 @@ export function formatPhone(phone: string): string {
  * @returns Fecha formateada
  */
 export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString('es-ES', {
+  if (!date) return 'Nunca';
+  
+  const dateObj = new Date(date);
+  
+  // Verificar si la fecha es válida
+  if (isNaN(dateObj.getTime())) {
+    return 'Fecha inválida';
+  }
+  
+  return dateObj.toLocaleDateString('es-ES', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -46,7 +55,16 @@ export function formatDate(date: string | Date): string {
  * @returns Fecha y hora formateada
  */
 export function formatDateTime(date: string | Date): string {
-  return new Date(date).toLocaleString('es-ES', {
+  if (!date) return 'Nunca';
+  
+  const dateObj = new Date(date);
+  
+  // Verificar si la fecha es válida
+  if (isNaN(dateObj.getTime())) {
+    return 'Fecha inválida';
+  }
+  
+  return dateObj.toLocaleString('es-ES', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

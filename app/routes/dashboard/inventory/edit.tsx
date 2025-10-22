@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import { inventoryService, type Inventory } from '~/lib/api';
 import Button from '~/components/ui/Button';
+import LoadingSpinner from '~/components/ui/LoadingSpinner';
 
-export default function NewInventory() {
+export default function EditInventory() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [hostels, setHostels] = useState<{id: string, name: string}[]>([]);
   const [formData, setFormData] = useState({
@@ -14,6 +17,27 @@ export default function NewInventory() {
     description: '',
     is_active: true,
   });
+
+  const loadInventory = async () => {
+    if (!id) return;
+    
+    try {
+      setLoading(true);
+      const response = await inventoryService.getInventory(id);
+      const inventory = response.data;
+      
+      setFormData({
+        hostel: inventory.hostel,
+        name: inventory.name,
+        description: inventory.description,
+        is_active: inventory.is_active,
+      });
+    } catch (error) {
+      console.error('Error loading inventory:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadHostels = async () => {
     try {
@@ -31,20 +55,23 @@ export default function NewInventory() {
 
   useEffect(() => {
     loadHostels();
-  }, []);
+    loadInventory();
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!id) return;
+    
+    setSaving(true);
     setError('');
 
     try {
-      await inventoryService.createInventory(formData);
-      navigate('/dashboard/inventory/list');
+      await inventoryService.updateInventory(id, formData);
+      navigate(`/dashboard/inventory/detail/${id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al crear inventario');
+      setError(err.response?.data?.message || 'Error al actualizar inventario');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -58,11 +85,19 @@ export default function NewInventory() {
     }));
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 sm:px-0 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white">Nuevo Inventario</h1>
-        <p className="text-gray-300 mt-2">Crear un nuevo inventario para un albergue</p>
+        <h1 className="text-3xl font-bold text-white">Editar Inventario</h1>
+        <p className="text-gray-300 mt-2">Modificar información del inventario</p>
       </div>
 
       <div className="card">
@@ -139,14 +174,14 @@ export default function NewInventory() {
           <div className="flex gap-4 pt-4">
             <Button
               type="submit"
-              loading={loading}
+              loading={saving}
               className="bg-red-600 hover:bg-red-700"
             >
-              Crear Inventario
+              Actualizar Inventario
             </Button>
             <Button
               type="button"
-              onClick={() => navigate('/dashboard/inventory/list')}
+              onClick={() => navigate(`/dashboard/inventory/detail/${id}`)}
               className="bg-gray-600 hover:bg-gray-700"
             >
               Cancelar

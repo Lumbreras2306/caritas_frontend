@@ -72,7 +72,7 @@ export interface AdminUser {
   email: string;
   is_active: boolean;
   is_superuser: boolean;
-  last_login: string | null;
+  last_login?: string | null;
   main_hostel?: string;
   date_joined: string;
 }
@@ -156,7 +156,12 @@ export interface Inventory {
 export interface InventoryItemDetail {
   id: string;
   inventory: string;
+  inventory_name: string;
+  hostel_name: string;
   item: InventoryItem;
+  item_name: string;
+  item_category: string;
+  item_unit: string;
   quantity: number;
   minimum_stock: number;
   is_active: boolean;
@@ -264,6 +269,44 @@ export interface LocationRequest {
   timezone?: string;
 }
 
+export interface AdminUser {
+  id: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  is_active: boolean;
+  is_staff: boolean;
+  is_superuser: boolean;
+  date_joined: string;
+  last_login?: string | null;
+}
+
+export interface AdminUserCreateData {
+  username: string;
+  first_name: string;
+  last_name: string;
+  is_active: boolean;
+  is_staff: boolean;
+  is_superuser: boolean;
+  password: string;
+}
+
+export interface AdminUserUpdateData {
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  is_active?: boolean;
+  is_staff?: boolean;
+  is_superuser?: boolean;
+  password?: string;
+}
+
+export interface AdminUserPasswordChangeData {
+  old_password: string;
+  new_password: string;
+}
+
 export const hostelsService = {
   getHostels: (params?: any) => {
     return api.get<PaginatedResponse<Hostel>>('/albergues/hostels/', { params });
@@ -337,6 +380,8 @@ export const servicesService = {
     api.patch(`/services/hostel-services/${id}/`, data),
   deleteHostelService: (id: string) =>
     api.delete(`/services/hostel-services/${id}/`),
+  getSchedules: (params?: any) => 
+    api.get('/services/schedules/', { params }),
   getServicesByHostel: (hostelId: string) =>
     api.get(`/services/hostel-services/by-hostel/?hostel=${hostelId}`),
   
@@ -395,4 +440,25 @@ export const inventoryService = {
     api.post(`/inventory/inventory-items/${id}/update-quantity/`, data),
   getLowStockItems: (params?: any) => 
     api.get<PaginatedResponse<InventoryItemDetail>>('/inventory/inventory-items/low-stock/', { params }),
+};
+
+export const adminUsersService = {
+  getAdminUsers: (params?: any) => {
+    return api.get<PaginatedResponse<AdminUser>>('/users/admins/', { params });
+  },
+  getAdminUser: (id: string) => {
+    return api.get<AdminUser>(`/users/admins/${id}/`);
+  },
+  createAdminUser: (data: AdminUserCreateData) => {
+    return api.post<AdminUser>('/users/admins/', data);
+  },
+  updateAdminUser: (id: string, data: AdminUserUpdateData) => {
+    return api.patch<AdminUser>(`/users/admins/${id}/`, data);
+  },
+  deleteAdminUser: (id: string) => {
+    return api.delete(`/users/admins/${id}/`);
+  },
+  changePassword: (data: AdminUserPasswordChangeData) => {
+    return api.post('/users/admins/change_password/', data);
+  },
 };
