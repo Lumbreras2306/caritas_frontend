@@ -13,15 +13,6 @@ interface ServiceScheduleModalProps {
   title?: string;
 }
 
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Domingo' },
-  { value: 1, label: 'Lunes' },
-  { value: 2, label: 'Martes' },
-  { value: 3, label: 'Miércoles' },
-  { value: 4, label: 'Jueves' },
-  { value: 5, label: 'Viernes' },
-  { value: 6, label: 'Sábado' },
-];
 
 export default function ServiceScheduleModal({
   isOpen,
@@ -43,7 +34,7 @@ export default function ServiceScheduleModal({
   useEffect(() => {
     if (schedule) {
       setFormData({
-        day_of_week: schedule.day_of_week,
+        day_of_week: 1, // Forzar siempre lunes, sin importar el día guardado
         start_time: schedule.start_time,
         end_time: schedule.end_time,
         is_available: schedule.is_available,

@@ -281,7 +281,7 @@ export default function NewHostelService() {
                 <option value="">Seleccionar horario</option>
                 {schedules.map((schedule) => (
                   <option key={schedule.id} value={schedule.id}>
-                    {schedule.day_name} - {schedule.start_time} a {schedule.end_time} ({schedule.duration_hours}h)
+                    {schedule.start_time} a {schedule.end_time} ({schedule.duration_hours}h)
                   </option>
                 ))}
               </select>

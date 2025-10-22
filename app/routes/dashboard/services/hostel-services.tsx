@@ -31,6 +31,7 @@ interface HostelService {
 
 export default function HostelServices() {
   const [hostelServices, setHostelServices] = useState<HostelService[]>([]);
+  const [allHostelServices, setAllHostelServices] = useState<HostelService[]>([]);
   const [hostels, setHostels] = useState<Hostel[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,20 +56,11 @@ export default function HostelServices() {
     try {
       setLoading(true);
       setError('');
-      const params: any = { 
-        search: searchTerm,
-      };
       
-      if (hostelFilter) {
-        params.hostel = hostelFilter;
-      }
-      
-      if (statusFilter !== 'all') {
-        params.is_active = statusFilter === 'active';
-      }
-      
-      const response = await servicesService.getHostelServices(params);
-      setHostelServices(response.data.results || []);
+      const response = await servicesService.getHostelServices({ page_size: 100 });
+      const allServices = response.data.results || [];
+      setAllHostelServices(allServices);
+      setHostelServices(allServices);
     } catch (error: any) {
       console.error('Error loading hostel services:', error);
       setError('Error al cargar los servicios de albergues');
@@ -88,11 +80,38 @@ export default function HostelServices() {
 
   useEffect(() => {
     loadHostelServices();
-  }, [searchTerm, hostelFilter, statusFilter]);
+  }, []);
 
   useEffect(() => {
     loadHostels();
   }, []);
+
+  // Filtrar datos en el frontend
+  useEffect(() => {
+    let filtered = allHostelServices;
+
+    // Filtrar por término de búsqueda
+    if (searchTerm) {
+      filtered = filtered.filter(service => 
+        service.hostel_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        service.service_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filtrar por albergue
+    if (hostelFilter) {
+      filtered = filtered.filter(service => service.hostel === hostelFilter);
+    }
+
+    // Filtrar por estado
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(service => 
+        statusFilter === 'active' ? service.is_active : !service.is_active
+      );
+    }
+
+    setHostelServices(filtered);
+  }, [searchTerm, hostelFilter, statusFilter, allHostelServices]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
