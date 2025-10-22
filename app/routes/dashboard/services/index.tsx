@@ -218,6 +218,21 @@ export default function Services() {
               Configura qué servicios están disponibles en cada albergue
             </p>
           </Link>
+
+          <Link to="/dashboard/services/schedules" className="card hover:shadow-lg transition-shadow group">
+            <div className="flex items-center mb-4">
+              <div className="p-3 bg-purple-600 rounded-lg group-hover:bg-purple-700 transition-colors">
+                <ClockIcon className="w-6 h-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-semibold text-white">Horarios de Servicios</h3>
+                <p className="text-gray-400 text-sm">Gestionar horarios de disponibilidad</p>
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm">
+              Configura los horarios de disponibilidad para cada servicio
+            </p>
+          </Link>
         </div>
 
         {/* Acciones rápidas */}
@@ -235,6 +250,10 @@ export default function Services() {
             <Link to="/dashboard/services/reservations" className="btn-secondary flex items-center gap-2">
               <CalendarDaysIcon className="w-5 h-5" />
               Ver Reservas
+            </Link>
+            <Link to="/dashboard/services/schedules" className="btn-secondary flex items-center gap-2">
+              <ClockIcon className="w-5 h-5" />
+              Gestionar Horarios
             </Link>
           </div>
         </div>

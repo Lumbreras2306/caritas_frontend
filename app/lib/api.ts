@@ -131,6 +131,26 @@ export interface Service {
   updated_at: string;
 }
 
+export interface ServiceSchedule {
+  id: string;
+  day_of_week: number;
+  day_name: string;
+  start_time: string;
+  end_time: string;
+  is_available: boolean;
+  duration_hours: number;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ServiceScheduleRequest {
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  is_available: boolean;
+}
+
 // Artículo base del sistema (Item)
 export interface Item {
   id: string;
@@ -408,7 +428,15 @@ export const servicesService = {
   deleteHostelService: (id: string) =>
     api.delete(`/services/hostel-services/${id}/`),
   getSchedules: (params?: any) => 
-    api.get('/services/schedules/', { params }),
+    api.get<PaginatedResponse<ServiceSchedule>>('/services/schedules/', { params }),
+  getSchedule: (id: string) => 
+    api.get<ServiceSchedule>(`/services/schedules/${id}/`),
+  createSchedule: (data: ServiceScheduleRequest) =>
+    api.post<ServiceSchedule>('/services/schedules/', data),
+  updateSchedule: (id: string, data: Partial<ServiceScheduleRequest>) =>
+    api.patch<ServiceSchedule>(`/services/schedules/${id}/`, data),
+  deleteSchedule: (id: string) =>
+    api.delete(`/services/schedules/${id}/`),
   getServicesByHostel: (hostelId: string) =>
     api.get(`/services/hostel-services/by-hostel/?hostel=${hostelId}`),
   

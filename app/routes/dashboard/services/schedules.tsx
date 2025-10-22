@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router';
-import { servicesService, hostelsService, type Hostel } from '~/lib/api';
+import { servicesService, type ServiceSchedule } from '~/lib/api';
 import { formatDate } from '~/lib/utils';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import Button from '~/components/ui/Button';
@@ -9,33 +8,20 @@ import ServiceScheduleModal from '~/components/modals/ServiceScheduleModal';
 import { 
   PlusIcon, 
   TrashIcon, 
-  BuildingOfficeIcon,
-  CogIcon,
+  ClockIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
   EyeIcon,
   EllipsisVerticalIcon,
-  ClockIcon
+  PencilIcon
 } from '@heroicons/react/24/outline';
 
-interface HostelService {
-  id: string;
-  hostel: string;
-  hostel_name: string;
-  service: string;
-  service_name: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
-export default function HostelServices() {
-  const [hostelServices, setHostelServices] = useState<HostelService[]>([]);
-  const [hostels, setHostels] = useState<Hostel[]>([]);
+export default function ServiceSchedules() {
+  const [schedules, setSchedules] = useState<ServiceSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [hostelFilter, setHostelFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'unavailable'>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState('');
   const [deleteModal, setDeleteModal] = useState<{
@@ -47,11 +33,17 @@ export default function HostelServices() {
     id: null,
     name: ''
   });
+  const [scheduleModal, setScheduleModal] = useState<{
+    isOpen: boolean;
+    schedule: ServiceSchedule | null;
+  }>({
+    isOpen: false,
+    schedule: null
+  });
   const [deleting, setDeleting] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
-  const loadHostelServices = async () => {
+  const loadSchedules = async () => {
     try {
       setLoading(true);
       setError('');
@@ -59,40 +51,23 @@ export default function HostelServices() {
         search: searchTerm,
       };
       
-      if (hostelFilter) {
-        params.hostel = hostelFilter;
-      }
-      
       if (statusFilter !== 'all') {
-        params.is_active = statusFilter === 'active';
+        params.is_available = statusFilter === 'available';
       }
       
-      const response = await servicesService.getHostelServices(params);
-      setHostelServices(response.data.results || []);
+      const response = await servicesService.getSchedules(params);
+      setSchedules(response.data.results || []);
     } catch (error: any) {
-      console.error('Error loading hostel services:', error);
-      setError('Error al cargar los servicios de albergues');
+      console.error('Error loading schedules:', error);
+      setError('Error al cargar los horarios');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadHostels = async () => {
-    try {
-      const response = await hostelsService.getHostels({ page_size: 100 });
-      setHostels(response.data.results);
-    } catch (error: any) {
-      console.error('Error loading hostels:', error);
-    }
-  };
-
   useEffect(() => {
-    loadHostelServices();
-  }, [searchTerm, hostelFilter, statusFilter]);
-
-  useEffect(() => {
-    loadHostels();
-  }, []);
+    loadSchedules();
+  }, [searchTerm, statusFilter]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -121,15 +96,29 @@ export default function HostelServices() {
     
     try {
       setDeleting(true);
-      await servicesService.deleteHostelService(deleteModal.id);
+      await servicesService.deleteSchedule(deleteModal.id);
       setDeleteModal({ isOpen: false, id: null, name: '' });
-      loadHostelServices();
+      loadSchedules();
     } catch (error: any) {
-      console.error('Error deleting hostel service:', error);
-      setError('Error al eliminar la asignación de servicio');
+      console.error('Error deleting schedule:', error);
+      setError('Error al eliminar el horario');
     } finally {
       setDeleting(false);
     }
+  };
+
+  const handleEditClick = (schedule: ServiceSchedule) => {
+    setScheduleModal({
+      isOpen: true,
+      schedule
+    });
+  };
+
+  const handleCreateClick = () => {
+    setScheduleModal({
+      isOpen: true,
+      schedule: null
+    });
   };
 
   const toggleDropdown = (id: string) => {
@@ -144,6 +133,11 @@ export default function HostelServices() {
     setDeleteModal({ isOpen: false, id: null, name: '' });
   };
 
+  const handleScheduleSuccess = () => {
+    setScheduleModal({ isOpen: false, schedule: null });
+    loadSchedules();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -156,24 +150,18 @@ export default function HostelServices() {
     <div className="px-4 sm:px-0">
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Servicios por Albergue</h1>
+          <h1 className="text-3xl font-bold text-white">Horarios de Servicios</h1>
           <p className="text-gray-300 mt-1">
-            {hostelServices.length} asignación{hostelServices.length !== 1 ? 'es' : ''} encontrada{hostelServices.length !== 1 ? 's' : ''}
+            {schedules.length} horario{schedules.length !== 1 ? 's' : ''} encontrado{schedules.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowScheduleModal(true)}
-            className="btn-secondary flex items-center gap-2"
-          >
-            <ClockIcon className="w-5 h-5" />
-            Crear Horario
-          </button>
-          <Link to="/dashboard/services/hostel-services/new" className="btn-primary flex items-center gap-2">
-            <PlusIcon className="w-5 h-5" />
-            Asignar Servicio
-          </Link>
-        </div>
+        <Button
+          onClick={handleCreateClick}
+          className="btn-primary flex items-center gap-2"
+        >
+          <PlusIcon className="w-5 h-5" />
+          Crear Horario
+        </Button>
       </div>
 
       {error && (
@@ -189,7 +177,7 @@ export default function HostelServices() {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por albergue o servicio..."
+              placeholder="Buscar horarios..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full py-3 pr-4 pl-14 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
@@ -206,32 +194,17 @@ export default function HostelServices() {
 
         {showFilters && (
           <div className="card">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Albergue</label>
-                <select
-                  value={hostelFilter}
-                  onChange={(e) => setHostelFilter(e.target.value)}
-                  className="input-field"
-                >
-                  <option value="">Todos los albergues</option>
-                  {hostels.map((hostel) => (
-                    <option key={hostel.id} value={hostel.id}>
-                      {hostel.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="grid md:grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Estado</label>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+                  onChange={(e) => setStatusFilter(e.target.value as 'all' | 'available' | 'unavailable')}
                   className="input-field"
                 >
                   <option value="all">Todos</option>
-                  <option value="active">Activos</option>
-                  <option value="inactive">Inactivos</option>
+                  <option value="available">Disponibles</option>
+                  <option value="unavailable">No disponibles</option>
                 </select>
               </div>
             </div>
@@ -239,40 +212,51 @@ export default function HostelServices() {
         )}
       </div>
 
-      {/* Lista de servicios por albergue */}
+      {/* Lista de horarios */}
       <div className="space-y-4">
-        {hostelServices.map((hostelService) => (
-          <div key={hostelService.id} className="card hover:shadow-lg transition-shadow duration-200">
+        {schedules.map((schedule) => (
+          <div key={schedule.id} className="card hover:shadow-lg transition-shadow duration-200">
             <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
               <div className="flex gap-4 flex-1">
                 <div className="flex-shrink-0">
                   <div className="w-16 h-16 bg-gray-700 rounded-lg flex items-center justify-center">
-                    <BuildingOfficeIcon className="w-8 h-8 text-gray-400" />
+                    <ClockIcon className="w-8 h-8 text-gray-400" />
                   </div>
                 </div>
                 
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    <h3 className="text-lg font-semibold text-white">{hostelService.hostel_name}</h3>
+                    <h3 className="text-lg font-semibold text-white">
+                      Horario de Servicio
+                    </h3>
                     <span className="text-gray-400">•</span>
-                    <span className="text-gray-300">{hostelService.service_name}</span>
-                    {hostelService.is_active ? (
+                    <span className="text-gray-300">
+                      {schedule.start_time} - {schedule.end_time}
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-gray-300">
+                      {schedule.duration_hours}h
+                    </span>
+                    {schedule.is_available ? (
                       <span className="px-2 py-1 bg-green-600 text-white text-xs rounded">
-                        Activo
+                        Disponible
                       </span>
                     ) : (
                       <span className="px-2 py-1 bg-gray-500 text-white text-xs rounded">
-                        Inactivo
+                        No disponible
                       </span>
                     )}
                   </div>
                   
                   <div className="text-sm text-gray-300">
                     <p className="mb-1">
-                      <span className="text-gray-400">Asignado:</span> {formatDate(hostelService.created_at)}
+                      <span className="text-gray-400">Creado por:</span> {schedule.created_by_name}
+                    </p>
+                    <p className="mb-1">
+                      <span className="text-gray-400">Creado:</span> {formatDate(schedule.created_at)}
                     </p>
                     <p>
-                      <span className="text-gray-400">Última actualización:</span> {formatDate(hostelService.updated_at)}
+                      <span className="text-gray-400">Última actualización:</span> {formatDate(schedule.updated_at)}
                     </p>
                   </div>
                 </div>
@@ -280,41 +264,35 @@ export default function HostelServices() {
               
               <div className="relative dropdown-container">
                 <button
-                  onClick={() => toggleDropdown(hostelService.id)}
+                  onClick={() => toggleDropdown(schedule.id)}
                   className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
                   title="Acciones"
                 >
                   <EllipsisVerticalIcon className="w-5 h-5" />
                 </button>
                 
-                {activeDropdown === hostelService.id && (
+                {activeDropdown === schedule.id && (
                   <div className="absolute right-0 top-full mt-1 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
                     <div className="py-1">
-                      <Link
-                        to={`/dashboard/services/hostel-services/detail/${hostelService.id}`}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                        onClick={closeDropdown}
-                      >
-                        <EyeIcon className="w-4 h-4" />
-                        Ver detalles
-                      </Link>
-                      <Link
-                        to={`/dashboard/services/hostel-services/edit/${hostelService.id}`}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                        onClick={closeDropdown}
-                      >
-                        <CogIcon className="w-4 h-4" />
-                        Editar asignación
-                      </Link>
                       <button
                         onClick={() => {
-                          handleDeleteClick(hostelService.id, `${hostelService.hostel_name} - ${hostelService.service_name}`);
+                          handleEditClick(schedule);
+                          closeDropdown();
+                        }}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors w-full text-left"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                        Editar horario
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleDeleteClick(schedule.id, `Horario ${schedule.start_time}-${schedule.end_time}`);
                           closeDropdown();
                         }}
                         className="flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors w-full text-left"
                       >
                         <TrashIcon className="w-4 h-4" />
-                        Eliminar asignación
+                        Eliminar horario
                       </button>
                     </div>
                   </div>
@@ -325,21 +303,24 @@ export default function HostelServices() {
         ))}
       </div>
 
-      {hostelServices.length === 0 && !loading && (
+      {schedules.length === 0 && !loading && (
         <div className="text-center py-12">
-          <BuildingOfficeIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-400 text-lg">No se encontraron asignaciones</p>
+          <ClockIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-400 text-lg">No se encontraron horarios</p>
           <p className="text-gray-500 text-sm mt-2">
-            {searchTerm || hostelFilter || statusFilter !== 'all' 
+            {searchTerm || statusFilter !== 'all' 
               ? 'Intenta ajustar los filtros de búsqueda' 
-              : 'Comienza asignando servicios a albergues'
+              : 'Comienza creando horarios para los servicios'
             }
           </p>
-          {!searchTerm && !hostelFilter && statusFilter === 'all' && (
-            <Link to="/dashboard/services/hostel-services/new" className="btn-primary mt-4 inline-flex items-center gap-2">
+          {!searchTerm && statusFilter === 'all' && (
+            <Button
+              onClick={handleCreateClick}
+              className="btn-primary mt-4 inline-flex items-center gap-2"
+            >
               <PlusIcon className="w-5 h-5" />
-              Asignar Primer Servicio
-            </Link>
+              Crear Primer Horario
+            </Button>
           )}
         </div>
       )}
@@ -349,23 +330,21 @@ export default function HostelServices() {
         isOpen={deleteModal.isOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        title="Eliminar Asignación"
-        message={`¿Está seguro de eliminar la asignación "${deleteModal.name}"? Esta acción no se puede deshacer.`}
+        title="Eliminar Horario"
+        message={`¿Está seguro de eliminar el horario "${deleteModal.name}"? Esta acción no se puede deshacer.`}
         confirmText="Eliminar"
         cancelText="Cancelar"
         type="danger"
         loading={deleting}
       />
 
-      {/* Modal de creación de horario */}
+      {/* Modal de creación/edición de horario */}
       <ServiceScheduleModal
-        isOpen={showScheduleModal}
-        onClose={() => setShowScheduleModal(false)}
-        onSuccess={() => {
-          setShowScheduleModal(false);
-          // Opcional: recargar datos si es necesario
-        }}
-        title="Crear Horario de Servicio"
+        isOpen={scheduleModal.isOpen}
+        onClose={() => setScheduleModal({ isOpen: false, schedule: null })}
+        onSuccess={handleScheduleSuccess}
+        schedule={scheduleModal.schedule}
+        title={scheduleModal.schedule ? 'Editar Horario' : 'Crear Horario'}
       />
     </div>
   );

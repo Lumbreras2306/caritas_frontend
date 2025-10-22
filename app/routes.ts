@@ -37,6 +37,7 @@ export default [
     route("services/hostel-services/detail/:id", "routes/dashboard/services/hostel-services/detail.tsx"),
     route("services/hostel-services/new", "routes/dashboard/services/hostel-services/new.tsx"),
     route("services/hostel-services/edit/:id", "routes/dashboard/services/hostel-services/edit.tsx"),
+    route("services/schedules", "routes/dashboard/services/schedules.tsx"),
     route("services/reservations", "routes/dashboard/services/reservations.tsx"),
     route("services/reservations/new", "routes/dashboard/services/reservations/new.tsx"),
     route("services/reservations/detail/:id", "routes/dashboard/services/reservations/detail.tsx"),
