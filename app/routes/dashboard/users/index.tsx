@@ -18,7 +18,7 @@ export default function UsersDashboard() {
         const [customersRes, adminsRes, preRegistersRes] = await Promise.all([
           usersService.getCustomers({ page_size: 1 }),
           usersService.getAdmins({ page_size: 1 }),
-          usersService.getPreRegisters({ page_size: 1 }),
+          usersService.getPreRegisters({ page_size: 1, status: 'PENDING' }),
         ]);
 
         setStats({
@@ -120,7 +120,7 @@ export default function UsersDashboard() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-400">{stats.preRegisters}</div>
-                <div className="text-sm text-gray-300">Pre-registros</div>
+                <div className="text-sm text-gray-300">Pre-registros Pendientes</div>
               </div>
             </div>
           </div>

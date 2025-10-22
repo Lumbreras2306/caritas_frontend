@@ -14,11 +14,13 @@ export default function NewAdmin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     first_name: '',
     last_name: '',
     password: '',
+    password_confirm: '',
     is_active: true,
     is_staff: true,
     is_superuser: true,
@@ -62,12 +64,19 @@ export default function NewAdmin() {
         return;
       }
 
+      // Validar confirmación de contraseña
+      if (formData.password !== formData.password_confirm) {
+        setError('Las contraseñas no coinciden');
+        return;
+      }
+
       // Preparar los datos para la creación
       const createData: AdminUserCreateData = {
         username: formData.username.trim(),
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
         password: formData.password,
+        password_confirm: formData.password_confirm,
         is_active: formData.is_active,
         is_staff: formData.is_staff,
         is_superuser: formData.is_superuser,
@@ -88,7 +97,7 @@ export default function NewAdmin() {
   };
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="px-4 sm:px-0 max-w-4xl mx-auto">
       <div className="mb-6 flex items-center gap-4">
         <button
           onClick={() => navigate('/dashboard/admins')}
@@ -111,7 +120,7 @@ export default function NewAdmin() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="max-w-2xl">
+      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
         <div className="card">
           <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
             <UserPlusIcon className="w-6 h-6 text-green-400" />
@@ -154,6 +163,36 @@ export default function NewAdmin() {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
                 >
                   {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Confirmar Contraseña *
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasswordConfirm ? 'text' : 'password'}
+                  name="password_confirm"
+                  value={formData.password_confirm}
+                  onChange={handleChange}
+                  required
+                  className="input-field pr-10"
+                  placeholder="Repite la contraseña"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                >
+                  {showPasswordConfirm ? (
                     <EyeSlashIcon className="w-5 h-5" />
                   ) : (
                     <EyeIcon className="w-5 h-5" />

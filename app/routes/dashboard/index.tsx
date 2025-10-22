@@ -23,7 +23,7 @@ export default function Dashboard() {
         const [adminsRes, customersRes, preRegistersRes, hostelsRes, servicesRes, inventoryRes] = await Promise.all([
           usersService.getAdmins({ page_size: 1 }),
           usersService.getCustomers({ page_size: 1 }),
-          usersService.getPreRegisters({ page_size: 1 }),
+          usersService.getPreRegisters({ page_size: 1, status: 'PENDING' }),
           hostelsService.getHostels({ page_size: 1 }),
           servicesService.getServices({ page_size: 1 }),
           inventoryService.getItems({ page_size: 1 }),
@@ -156,7 +156,7 @@ export default function Dashboard() {
                 {stats.customers + stats.admins}
               </div>
               <p className="text-gray-400 text-sm">
-                Usuarios en el sistema
+                Usuarios finales + Administradores
               </p>
             </div>
           </div>

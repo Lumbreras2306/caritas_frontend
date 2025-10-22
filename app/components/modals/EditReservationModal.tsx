@@ -43,6 +43,7 @@ interface User {
   id: string;
   full_name: string;
   phone_number: string;
+  gender: 'M' | 'F';
 }
 
 export default function EditReservationModal({ 
@@ -130,10 +131,33 @@ export default function EditReservationModal({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'number' ? parseInt(value) || 0 : value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: type === 'number' ? parseInt(value) || 0 : value
+      };
+
+      // Si se cambia el tipo a individual, ajustar las cantidades
+      if (name === 'type' && value === 'individual') {
+        // Buscar el usuario seleccionado para obtener su género
+        const selectedUser = users.find(u => u.id === newData.user_id);
+        if (selectedUser) {
+          if (selectedUser.gender === 'M') {
+            newData.men_quantity = 1;
+            newData.women_quantity = 0;
+          } else {
+            newData.men_quantity = 0;
+            newData.women_quantity = 1;
+          }
+        } else {
+          // Si no hay usuario seleccionado, usar valores por defecto
+          newData.men_quantity = 1;
+          newData.women_quantity = 0;
+        }
+      }
+
+      return newData;
+    });
   };
 
   // Funciones para autocompletado
@@ -172,11 +196,26 @@ export default function EditReservationModal({
   };
 
   const selectUser = (user: User) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      user: user.full_name, 
-      user_id: user.id 
-    }));
+    setFormData(prev => {
+      const newData = { 
+        ...prev, 
+        user: user.full_name, 
+        user_id: user.id 
+      };
+      
+      // Si el tipo es individual, ajustar las cantidades basándose en el género del usuario
+      if (prev.type === 'individual') {
+        if (user.gender === 'M') {
+          newData.men_quantity = 1;
+          newData.women_quantity = 0;
+        } else {
+          newData.men_quantity = 0;
+          newData.women_quantity = 1;
+        }
+      }
+      
+      return newData;
+    });
     setShowUserSuggestions(false);
   };
 
@@ -356,6 +395,17 @@ export default function EditReservationModal({
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Cantidad de Hombres *
+                {formData.type === 'individual' && formData.user_id && (() => {
+                  const selectedUser = users.find(u => u.id === formData.user_id);
+                  return selectedUser ? (
+                    <span className="text-yellow-400 text-xs ml-2">
+                      ({selectedUser.gender === 'M' ? '1' : '0'})
+                    </span>
+                  ) : null;
+                })()}
+                {formData.type === 'individual' && !formData.user_id && (
+                  <span className="text-yellow-400 text-xs ml-2">(Seleccione un usuario primero)</span>
+                )}
               </label>
               <input
                 type="number"
@@ -363,14 +413,27 @@ export default function EditReservationModal({
                 value={formData.men_quantity}
                 onChange={handleInputChange}
                 min="0"
+                max={formData.type === 'individual' ? 1 : undefined}
+                disabled={formData.type === 'individual'}
                 required
-                className="input-field"
+                className={`input-field ${formData.type === 'individual' ? 'bg-gray-700 cursor-not-allowed' : ''}`}
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Cantidad de Mujeres *
+                {formData.type === 'individual' && formData.user_id && (() => {
+                  const selectedUser = users.find(u => u.id === formData.user_id);
+                  return selectedUser ? (
+                    <span className="text-yellow-400 text-xs ml-2">
+                      ({selectedUser.gender === 'F' ? '1' : '0'})
+                    </span>
+                  ) : null;
+                })()}
+                {formData.type === 'individual' && !formData.user_id && (
+                  <span className="text-yellow-400 text-xs ml-2">(Seleccione un usuario primero)</span>
+                )}
               </label>
               <input
                 type="number"
@@ -378,8 +441,10 @@ export default function EditReservationModal({
                 value={formData.women_quantity}
                 onChange={handleInputChange}
                 min="0"
+                max={formData.type === 'individual' ? 1 : undefined}
+                disabled={formData.type === 'individual'}
                 required
-                className="input-field"
+                className={`input-field ${formData.type === 'individual' ? 'bg-gray-700 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>

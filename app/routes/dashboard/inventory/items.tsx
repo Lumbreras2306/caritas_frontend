@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { inventoryService, type InventoryItem } from '~/lib/api';
+import { inventoryService, type Item } from '~/lib/api';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export default function InventoryItems() {
-  const [items, setItems] = useState<InventoryItem[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -19,8 +19,30 @@ export default function InventoryItems() {
       
       const response = await inventoryService.getItems(params);
       setItems(response.data.results);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading items:', error);
+      
+      // Mostrar detalles específicos del error
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+        
+        if (error.response.status === 400) {
+          console.error('Bad Request - Validation errors:', error.response.data);
+        } else if (error.response.status === 401) {
+          console.error('Unauthorized - Authentication required');
+        } else if (error.response.status === 403) {
+          console.error('Forbidden - Insufficient permissions');
+        } else if (error.response.status === 404) {
+          console.error('Not Found - Items not found');
+        } else if (error.response.status === 500) {
+          console.error('Internal Server Error - Server issue');
+        }
+      } else if (error.request) {
+        console.error('Network error - No response received:', error.request);
+      } else {
+        console.error('Request setup error:', error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -29,9 +51,51 @@ export default function InventoryItems() {
   const loadCategories = async () => {
     try {
       const response = await inventoryService.getCategories();
-      setCategories(response.data);
-    } catch (error) {
+      console.log('Categories response:', response.data);
+      
+      // Manejar diferentes estructuras de respuesta
+      let categoriesData: string[] = [];
+      const responseData = response.data as any;
+      
+      if (Array.isArray(responseData)) {
+        categoriesData = responseData;
+      } else if (responseData && Array.isArray(responseData.results)) {
+        categoriesData = responseData.results;
+      } else if (responseData && Array.isArray(responseData.categories)) {
+        categoriesData = responseData.categories;
+      } else {
+        console.warn('Unexpected categories response structure:', responseData);
+        categoriesData = [];
+      }
+      
+      setCategories(categoriesData);
+    } catch (error: any) {
       console.error('Error loading categories:', error);
+      
+      // Mostrar detalles específicos del error
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+        
+        if (error.response.status === 400) {
+          console.error('Bad Request - Validation errors:', error.response.data);
+        } else if (error.response.status === 401) {
+          console.error('Unauthorized - Authentication required');
+        } else if (error.response.status === 403) {
+          console.error('Forbidden - Insufficient permissions');
+        } else if (error.response.status === 404) {
+          console.error('Not Found - Categories not found');
+        } else if (error.response.status === 500) {
+          console.error('Internal Server Error - Server issue');
+        }
+      } else if (error.request) {
+        console.error('Network error - No response received:', error.request);
+      } else {
+        console.error('Request setup error:', error.message);
+      }
+      
+      // Establecer array vacío en caso de error
+      setCategories([]);
     }
   };
 
@@ -89,7 +153,7 @@ export default function InventoryItems() {
           className="input-field"
         >
           <option value="">Todas las categorías</option>
-          {categories.map((category) => (
+          {Array.isArray(categories) && categories.map((category) => (
             <option key={category} value={category}>
               {category}
             </option>

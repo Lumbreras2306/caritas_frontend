@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { inventoryService, type InventoryItemDetail } from '~/lib/api';
+import { inventoryService, type InventoryItem } from '~/lib/api';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import { ExclamationTriangleIcon, PencilIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 export default function LowStockItems() {
-  const [items, setItems] = useState<InventoryItemDetail[]>([]);
+  const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [inventoryFilter, setInventoryFilter] = useState('');
@@ -18,9 +18,43 @@ export default function LowStockItems() {
       if (inventoryFilter) params.inventory = inventoryFilter;
       
       const response = await inventoryService.getLowStockItems(params);
-      setItems(response.data.results);
-    } catch (error) {
+      let items: InventoryItem[] = [];
+      const responseData = response.data as any;
+      
+      if (Array.isArray(responseData)) {
+        items = responseData;
+      } else if (responseData && responseData.results && Array.isArray(responseData.results.results)) {
+        items = responseData.results.results;
+      } else if (responseData && Array.isArray(responseData.results)) {
+        items = responseData.results;
+      } else {
+        items = [];
+      }
+      setItems(items);
+    } catch (error: any) {
       console.error('Error loading low stock items:', error);
+      
+      // Mostrar detalles específicos del error
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+        
+        if (error.response.status === 400) {
+          console.error('Bad Request - Validation errors:', error.response.data);
+        } else if (error.response.status === 401) {
+          console.error('Unauthorized - Authentication required');
+        } else if (error.response.status === 403) {
+          console.error('Forbidden - Insufficient permissions');
+        } else if (error.response.status === 404) {
+          console.error('Not Found - Endpoint not available');
+        } else if (error.response.status === 500) {
+          console.error('Internal Server Error - Server issue');
+        }
+      } else if (error.request) {
+        console.error('Network error - No response received:', error.request);
+      } else {
+        console.error('Request setup error:', error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -112,10 +146,10 @@ export default function LowStockItems() {
                   <tr key={item.id} className="hover:bg-gray-700">
                     <td className="px-4 py-3">
                       <div>
-                        <p className="text-white font-medium">{item.item.name}</p>
-                        <p className="text-gray-400 text-sm">{item.item.description}</p>
+                        <p className="text-white font-medium">{item.item_name}</p>
+                        <p className="text-gray-400 text-sm">{item.item_description}</p>
                         <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded-full mt-1 inline-block">
-                          {item.item.category}
+                          {item.item_category}
                         </span>
                       </div>
                     </td>
@@ -130,17 +164,17 @@ export default function LowStockItems() {
                             ? 'text-yellow-400' 
                             : 'text-green-400'
                       }`}>
-                        {item.quantity} {item.item.unit}
+                        {item.quantity} {item.item_unit}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-300">
-                      {item.minimum_stock} {item.item.unit}
+                      {item.minimum_stock} {item.item_unit}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`font-bold ${
                         difference < 0 ? 'text-red-400' : 'text-green-400'
                       }`}>
-                        {difference > 0 ? '+' : ''}{difference} {item.item.unit}
+                        {difference > 0 ? '+' : ''}{difference} {item.item_unit}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -161,7 +195,7 @@ export default function LowStockItems() {
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <Link
-                          to={`/dashboard/inventory/${item.inventory}`}
+                          to={`/dashboard/inventory/detail/${item.inventory}`}
                           className="text-blue-400 hover:text-blue-300"
                           title="Ver inventario"
                         >

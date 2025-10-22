@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { inventoryService, type InventoryItemDetail } from '~/lib/api';
+import { inventoryService, type InventoryItem } from '~/lib/api';
 import Button from '~/components/ui/Button';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 
@@ -10,7 +10,7 @@ export default function EditInventoryItem() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [inventoryItem, setInventoryItem] = useState<InventoryItemDetail | null>(null);
+  const [inventoryItem, setInventoryItem] = useState<InventoryItem | null>(null);
   const [formData, setFormData] = useState({
     quantity: 0,
     minimum_stock: 0,
@@ -29,8 +29,30 @@ export default function EditInventoryItem() {
         quantity: item.quantity,
         minimum_stock: item.minimum_stock,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading inventory item:', error);
+      
+      // Mostrar detalles específicos del error
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+        
+        if (error.response.status === 400) {
+          console.error('Bad Request - Validation errors:', error.response.data);
+        } else if (error.response.status === 401) {
+          console.error('Unauthorized - Authentication required');
+        } else if (error.response.status === 403) {
+          console.error('Forbidden - Insufficient permissions');
+        } else if (error.response.status === 404) {
+          console.error('Not Found - Inventory item not found');
+        } else if (error.response.status === 500) {
+          console.error('Internal Server Error - Server issue');
+        }
+      } else if (error.request) {
+        console.error('Network error - No response received:', error.request);
+      } else {
+        console.error('Request setup error:', error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -48,10 +70,39 @@ export default function EditInventoryItem() {
     setError('');
 
     try {
+      console.log('Updating inventory item:', { id, formData });
       await inventoryService.updateInventoryItem(id, formData);
+      console.log('Update successful, navigating to:', `/dashboard/inventory/detail/${inventoryItem?.inventory}`);
       navigate(`/dashboard/inventory/detail/${inventoryItem?.inventory}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar artículo');
+      console.error('Error updating inventory item:', err);
+      
+      // Mostrar detalles específicos del error
+      if (err.response) {
+        console.error('Error response status:', err.response.status);
+        console.error('Error response data:', err.response.data);
+        
+        if (err.response.status === 400) {
+          const validationErrors = Object.entries(err.response.data)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('; ');
+          setError(`Errores de validación: ${validationErrors}`);
+        } else if (err.response.status === 401) {
+          setError('No autorizado - Inicia sesión nuevamente');
+        } else if (err.response.status === 403) {
+          setError('Sin permisos suficientes para editar artículos');
+        } else if (err.response.status === 404) {
+          setError('Artículo no encontrado');
+        } else if (err.response.status === 500) {
+          setError('Error del servidor - Intenta nuevamente');
+        } else {
+          setError(err.response.data?.message || 'Error al actualizar artículo');
+        }
+      } else if (err.request) {
+        setError('Error de conexión - Verifica tu internet');
+      } else {
+        setError('Error inesperado - Intenta nuevamente');
+      }
     } finally {
       setSaving(false);
     }
@@ -66,14 +117,43 @@ export default function EditInventoryItem() {
     }));
   };
 
-  const handleQuantityUpdate = async (action: 'add' | 'subtract', amount: number) => {
+  const handleQuantityUpdate = async (action: 'add' | 'remove', amount: number) => {
     if (!id) return;
     
     try {
+      console.log('Updating quantity:', { id, action, amount });
       await inventoryService.updateQuantity(id, { action, amount });
+      console.log('Quantity update successful');
       loadInventoryItem(); // Recargar datos
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar cantidad');
+      console.error('Error updating quantity:', err);
+      
+      // Mostrar detalles específicos del error
+      if (err.response) {
+        console.error('Error response status:', err.response.status);
+        console.error('Error response data:', err.response.data);
+        
+        if (err.response.status === 400) {
+          const validationErrors = Object.entries(err.response.data)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('; ');
+          setError(`Errores de validación: ${validationErrors}`);
+        } else if (err.response.status === 401) {
+          setError('No autorizado - Inicia sesión nuevamente');
+        } else if (err.response.status === 403) {
+          setError('Sin permisos suficientes para actualizar cantidades');
+        } else if (err.response.status === 404) {
+          setError('Artículo no encontrado');
+        } else if (err.response.status === 500) {
+          setError('Error del servidor - Intenta nuevamente');
+        } else {
+          setError(err.response.data?.message || 'Error al actualizar cantidad');
+        }
+      } else if (err.request) {
+        setError('Error de conexión - Verifica tu internet');
+      } else {
+        setError('Error inesperado - Intenta nuevamente');
+      }
     }
   };
 
@@ -113,12 +193,12 @@ export default function EditInventoryItem() {
             <h4 className="text-white font-medium mb-3">Información del Artículo</h4>
             <div className="grid md:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-gray-300"><strong>Nombre:</strong> {inventoryItem.item.name}</p>
-                <p className="text-gray-300"><strong>Descripción:</strong> {inventoryItem.item.description}</p>
+                <p className="text-gray-300"><strong>Nombre:</strong> {inventoryItem.item_name}</p>
+                <p className="text-gray-300"><strong>Descripción:</strong> {inventoryItem.item_description}</p>
               </div>
               <div>
-                <p className="text-gray-300"><strong>Categoría:</strong> {inventoryItem.item.category}</p>
-                <p className="text-gray-300"><strong>Unidad:</strong> {inventoryItem.item.unit}</p>
+                <p className="text-gray-300"><strong>Categoría:</strong> {inventoryItem.item_category}</p>
+                <p className="text-gray-300"><strong>Unidad:</strong> {inventoryItem.item_unit}</p>
               </div>
             </div>
           </div>
@@ -206,7 +286,7 @@ export default function EditInventoryItem() {
                     onClick={() => {
                       const amount = (document.getElementById('subtractAmount') as HTMLInputElement)?.value;
                       if (amount) {
-                        handleQuantityUpdate('subtract', Number(amount));
+                        handleQuantityUpdate('remove', Number(amount));
                         (document.getElementById('subtractAmount') as HTMLInputElement).value = '';
                       }
                     }}

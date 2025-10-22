@@ -18,6 +18,7 @@ interface User {
   first_name: string;
   last_name: string;
   full_name: string;
+  gender: 'M' | 'F';
 }
 
 interface Hostel {
@@ -161,6 +162,21 @@ export default function NewServiceReservation() {
       return;
     }
 
+    // Validar cantidades según el tipo de reserva
+    if (formData.type === 'individual') {
+      if (formData.men_quantity + formData.women_quantity !== 1) {
+        setError('Para reserva individual debe haber exactamente 1 persona');
+        setSaving(false);
+        return;
+      }
+    } else {
+      if (formData.men_quantity + formData.women_quantity < 2) {
+        setError('Para reserva grupal debe haber al menos 2 personas');
+        setSaving(false);
+        return;
+      }
+    }
+
     // Convertir fecha a formato ISO
     const isoDateTime = new Date(formData.datetime_reserved).toISOString();
     
@@ -220,10 +236,32 @@ export default function NewServiceReservation() {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
 
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : type === 'number' ? parseInt(value) || 0 : value,
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : type === 'number' ? parseInt(value) || 0 : value,
+      };
+
+      // Si se cambia el tipo a individual, ajustar las cantidades
+      if (name === 'type' && value === 'individual') {
+        if (selectedUser) {
+          // Si hay un usuario seleccionado, usar su género
+          if (selectedUser.gender === 'M') {
+            newData.men_quantity = 1;
+            newData.women_quantity = 0;
+          } else {
+            newData.men_quantity = 0;
+            newData.women_quantity = 1;
+          }
+        } else {
+          // Si no hay usuario seleccionado, usar valores por defecto
+          newData.men_quantity = 1;
+          newData.women_quantity = 0;
+        }
+      }
+
+      return newData;
+    });
 
     // Si se selecciona un albergue, cargar sus servicios
     if (name === 'hostel' && value) {
@@ -246,7 +284,22 @@ export default function NewServiceReservation() {
   const handleUserSelect = (user: User) => {
     setSelectedUser(user);
     setUserSearchTerm(user.full_name);
-    setFormData(prev => ({ ...prev, user: user.id }));
+    setFormData(prev => {
+      const newData = { ...prev, user: user.id };
+      
+      // Si el tipo es individual, ajustar las cantidades basándose en el género del usuario
+      if (prev.type === 'individual') {
+        if (user.gender === 'M') {
+          newData.men_quantity = 1;
+          newData.women_quantity = 0;
+        } else {
+          newData.men_quantity = 0;
+          newData.women_quantity = 1;
+        }
+      }
+      
+      return newData;
+    });
     setShowUserSuggestions(false);
   };
 
@@ -454,6 +507,14 @@ export default function NewServiceReservation() {
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Cantidad de Hombres
+                {formData.type === 'individual' && selectedUser && (
+                  <span className="text-yellow-400 text-xs ml-2">
+                    ({selectedUser.gender === 'M' ? '1' : '0'})
+                  </span>
+                )}
+                {formData.type === 'individual' && !selectedUser && (
+                  <span className="text-yellow-400 text-xs ml-2">(Seleccione un usuario primero)</span>
+                )}
               </label>
               <input
                 type="number"
@@ -461,13 +522,23 @@ export default function NewServiceReservation() {
                 value={formData.men_quantity}
                 onChange={handleChange}
                 min="0"
-                className="input-field"
+                max={formData.type === 'individual' ? 1 : undefined}
+                disabled={formData.type === 'individual'}
+                className={`input-field ${formData.type === 'individual' ? 'bg-gray-700 cursor-not-allowed' : ''}`}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Cantidad de Mujeres
+                {formData.type === 'individual' && selectedUser && (
+                  <span className="text-yellow-400 text-xs ml-2">
+                    ({selectedUser.gender === 'F' ? '1' : '0'})
+                  </span>
+                )}
+                {formData.type === 'individual' && !selectedUser && (
+                  <span className="text-yellow-400 text-xs ml-2">(Seleccione un usuario primero)</span>
+                )}
               </label>
               <input
                 type="number"
@@ -475,7 +546,9 @@ export default function NewServiceReservation() {
                 value={formData.women_quantity}
                 onChange={handleChange}
                 min="0"
-                className="input-field"
+                max={formData.type === 'individual' ? 1 : undefined}
+                disabled={formData.type === 'individual'}
+                className={`input-field ${formData.type === 'individual' ? 'bg-gray-700 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>

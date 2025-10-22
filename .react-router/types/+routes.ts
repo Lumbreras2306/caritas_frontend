@@ -145,13 +145,15 @@ type Pages = {
   "/dashboard/inventory/items": {
     params: {};
   };
-  "/dashboard/inventory/items/new": {
-    params: {};
+  "/dashboard/inventory/:id/items/new": {
+    params: {
+      "id": string;
+    };
   };
   "/dashboard/inventory/items/new-item": {
     params: {};
   };
-  "/dashboard/inventory/items/edit/:id": {
+  "/dashboard/inventory/items/:id/edit": {
     params: {
       "id": string;
     };
@@ -170,7 +172,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/hostels/reservations/detail/:id" | "/dashboard/hostels/statistics" | "/dashboard/admins" | "/dashboard/admins/list" | "/dashboard/admins/new" | "/dashboard/admins/edit/:id" | "/dashboard/admins/detail/:id" | "/dashboard/services" | "/dashboard/services/list" | "/dashboard/services/new" | "/dashboard/services/edit/:id" | "/dashboard/services/detail/:id" | "/dashboard/services/hostel-services" | "/dashboard/services/hostel-services/detail/:id" | "/dashboard/services/hostel-services/new" | "/dashboard/services/hostel-services/edit/:id" | "/dashboard/services/reservations" | "/dashboard/services/reservations/new" | "/dashboard/services/reservations/detail/:id" | "/dashboard/inventory" | "/dashboard/inventory/list" | "/dashboard/inventory/new" | "/dashboard/inventory/detail/:id" | "/dashboard/inventory/edit/:id" | "/dashboard/inventory/items" | "/dashboard/inventory/items/new" | "/dashboard/inventory/items/new-item" | "/dashboard/inventory/items/edit/:id" | "/dashboard/inventory/low-stock" | "/dashboard/reservations" | "/404";
+    page: "/" | "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/hostels/reservations/detail/:id" | "/dashboard/hostels/statistics" | "/dashboard/admins" | "/dashboard/admins/list" | "/dashboard/admins/new" | "/dashboard/admins/edit/:id" | "/dashboard/admins/detail/:id" | "/dashboard/services" | "/dashboard/services/list" | "/dashboard/services/new" | "/dashboard/services/edit/:id" | "/dashboard/services/detail/:id" | "/dashboard/services/hostel-services" | "/dashboard/services/hostel-services/detail/:id" | "/dashboard/services/hostel-services/new" | "/dashboard/services/hostel-services/edit/:id" | "/dashboard/services/reservations" | "/dashboard/services/reservations/new" | "/dashboard/services/reservations/detail/:id" | "/dashboard/inventory" | "/dashboard/inventory/list" | "/dashboard/inventory/new" | "/dashboard/inventory/detail/:id" | "/dashboard/inventory/edit/:id" | "/dashboard/inventory/items" | "/dashboard/inventory/:id/items/new" | "/dashboard/inventory/items/new-item" | "/dashboard/inventory/items/:id/edit" | "/dashboard/inventory/low-stock" | "/dashboard/reservations" | "/404";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -178,7 +180,7 @@ type RouteFiles = {
   };
   "routes/dashboard/layout.tsx": {
     id: "routes/dashboard/layout";
-    page: "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/hostels/reservations/detail/:id" | "/dashboard/hostels/statistics" | "/dashboard/admins" | "/dashboard/admins/list" | "/dashboard/admins/new" | "/dashboard/admins/edit/:id" | "/dashboard/admins/detail/:id" | "/dashboard/services" | "/dashboard/services/list" | "/dashboard/services/new" | "/dashboard/services/edit/:id" | "/dashboard/services/detail/:id" | "/dashboard/services/hostel-services" | "/dashboard/services/hostel-services/detail/:id" | "/dashboard/services/hostel-services/new" | "/dashboard/services/hostel-services/edit/:id" | "/dashboard/services/reservations" | "/dashboard/services/reservations/new" | "/dashboard/services/reservations/detail/:id" | "/dashboard/inventory" | "/dashboard/inventory/list" | "/dashboard/inventory/new" | "/dashboard/inventory/detail/:id" | "/dashboard/inventory/edit/:id" | "/dashboard/inventory/items" | "/dashboard/inventory/items/new" | "/dashboard/inventory/items/new-item" | "/dashboard/inventory/items/edit/:id" | "/dashboard/inventory/low-stock" | "/dashboard/reservations";
+    page: "/dashboard" | "/dashboard/users" | "/dashboard/users/list" | "/dashboard/users/new" | "/dashboard/users/preregisters" | "/dashboard/hostels" | "/dashboard/hostels/list" | "/dashboard/hostels/new" | "/dashboard/hostels/edit/:id" | "/dashboard/hostels/detail/:id" | "/dashboard/hostels/reservations" | "/dashboard/hostels/reservations/detail/:id" | "/dashboard/hostels/statistics" | "/dashboard/admins" | "/dashboard/admins/list" | "/dashboard/admins/new" | "/dashboard/admins/edit/:id" | "/dashboard/admins/detail/:id" | "/dashboard/services" | "/dashboard/services/list" | "/dashboard/services/new" | "/dashboard/services/edit/:id" | "/dashboard/services/detail/:id" | "/dashboard/services/hostel-services" | "/dashboard/services/hostel-services/detail/:id" | "/dashboard/services/hostel-services/new" | "/dashboard/services/hostel-services/edit/:id" | "/dashboard/services/reservations" | "/dashboard/services/reservations/new" | "/dashboard/services/reservations/detail/:id" | "/dashboard/inventory" | "/dashboard/inventory/list" | "/dashboard/inventory/new" | "/dashboard/inventory/detail/:id" | "/dashboard/inventory/edit/:id" | "/dashboard/inventory/items" | "/dashboard/inventory/:id/items/new" | "/dashboard/inventory/items/new-item" | "/dashboard/inventory/items/:id/edit" | "/dashboard/inventory/low-stock" | "/dashboard/reservations";
   };
   "routes/dashboard/index.tsx": {
     id: "routes/dashboard/index";
@@ -326,7 +328,7 @@ type RouteFiles = {
   };
   "routes/dashboard/inventory/items/new.tsx": {
     id: "routes/dashboard/inventory/items/new";
-    page: "/dashboard/inventory/items/new";
+    page: "/dashboard/inventory/:id/items/new";
   };
   "routes/dashboard/inventory/items/new-item.tsx": {
     id: "routes/dashboard/inventory/items/new-item";
@@ -334,7 +336,7 @@ type RouteFiles = {
   };
   "routes/dashboard/inventory/items/edit.tsx": {
     id: "routes/dashboard/inventory/items/edit";
-    page: "/dashboard/inventory/items/edit/:id";
+    page: "/dashboard/inventory/items/:id/edit";
   };
   "routes/dashboard/inventory/low-stock.tsx": {
     id: "routes/dashboard/inventory/low-stock";

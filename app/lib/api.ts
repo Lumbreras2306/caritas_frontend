@@ -131,7 +131,8 @@ export interface Service {
   updated_at: string;
 }
 
-export interface InventoryItem {
+// Artículo base del sistema (Item)
+export interface Item {
   id: string;
   name: string;
   description: string;
@@ -142,10 +143,12 @@ export interface InventoryItem {
   updated_at: string;
 }
 
+// Inventario (contenedor de artículos)
 export interface Inventory {
   id: string;
   hostel: string;
   hostel_name: string;
+  hostel_location: string;
   name: string;
   description: string;
   is_active: boolean;
@@ -153,20 +156,43 @@ export interface Inventory {
   created_at: string;
 }
 
-export interface InventoryItemDetail {
+// Artículo en un inventario específico (InventoryItem)
+export interface InventoryItem {
   id: string;
   inventory: string;
   inventory_name: string;
   hostel_name: string;
-  item: InventoryItem;
+  item: string;
   item_name: string;
   item_category: string;
   item_unit: string;
+  item_description: string;
   quantity: number;
   minimum_stock: number;
   is_active: boolean;
+  stock_status: string;
   created_at: string;
   updated_at: string;
+}
+
+// Interfaces para requests
+export interface InventoryRequest {
+  hostel: string;
+  name: string;
+  description: string;
+  is_active: boolean;
+}
+
+export interface InventoryItemRequest {
+  inventory: string;
+  item: string;
+  quantity: number;
+  minimum_stock: number;
+}
+
+export interface InventoryItemQuantityUpdateRequest {
+  action: 'set' | 'add' | 'remove';
+  amount: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -290,6 +316,7 @@ export interface AdminUserCreateData {
   is_staff: boolean;
   is_superuser: boolean;
   password: string;
+  password_confirm: string;
 }
 
 export interface AdminUserUpdateData {
@@ -400,46 +427,53 @@ export const servicesService = {
 };
 
 export const inventoryService = {
+  // Gestión de artículos base (Items)
   getItems: (params?: any) => 
-    api.get<PaginatedResponse<InventoryItem>>('/inventory/items/', { params }),
+    api.get<PaginatedResponse<Item>>('/inventory/items/', { params }),
   getItem: (id: string) => 
-    api.get<InventoryItem>(`/inventory/items/${id}/`),
-  createItem: (data: Partial<InventoryItem>) => 
-    api.post<InventoryItem>('/inventory/items/', data),
-  updateItem: (id: string, data: Partial<InventoryItem>) =>
-    api.patch<InventoryItem>(`/inventory/items/${id}/`, data),
+    api.get<Item>(`/inventory/items/${id}/`),
+  createItem: (data: Partial<Item>) => 
+    api.post<Item>('/inventory/items/', data),
+  updateItem: (id: string, data: Partial<Item>) =>
+    api.patch<Item>(`/inventory/items/${id}/`, data),
   deleteItem: (id: string) =>
     api.delete(`/inventory/items/${id}/`),
   getCategories: () => 
-    api.get('/inventory/items/categories/'),
+    api.get<string[]>('/inventory/items/categories/'),
+  getUnits: () => 
+    api.get<string[]>('/inventory/items/units/'),
   
+  // Gestión de inventarios
   getInventories: (params?: any) => 
     api.get<PaginatedResponse<Inventory>>('/inventory/inventories/', { params }),
   getInventory: (id: string) => 
     api.get<Inventory>(`/inventory/inventories/${id}/`),
-  createInventory: (data: Partial<Inventory>) =>
+  createInventory: (data: InventoryRequest) =>
     api.post<Inventory>('/inventory/inventories/', data),
-  updateInventory: (id: string, data: Partial<Inventory>) =>
+  updateInventory: (id: string, data: Partial<InventoryRequest>) =>
     api.patch<Inventory>(`/inventory/inventories/${id}/`, data),
   deleteInventory: (id: string) =>
     api.delete(`/inventory/inventories/${id}/`),
   getInventorySummary: (id: string) =>
     api.get(`/inventory/inventories/${id}/summary/`),
   
+  // Gestión de artículos en inventarios (InventoryItems)
   getInventoryItems: (params?: any) => 
-    api.get<PaginatedResponse<InventoryItemDetail>>('/inventory/inventory-items/', { params }),
+    api.get<PaginatedResponse<InventoryItem>>('/inventory/inventory-items/', { params }),
   getInventoryItem: (id: string) => 
-    api.get<InventoryItemDetail>(`/inventory/inventory-items/${id}/`),
-  createInventoryItem: (data: any) =>
-    api.post<InventoryItemDetail>('/inventory/inventory-items/', data),
-  updateInventoryItem: (id: string, data: any) =>
-    api.patch<InventoryItemDetail>(`/inventory/inventory-items/${id}/`, data),
+    api.get<InventoryItem>(`/inventory/inventory-items/${id}/`),
+  createInventoryItem: (data: InventoryItemRequest) =>
+    api.post<InventoryItem>('/inventory/inventory-items/', data),
+  updateInventoryItem: (id: string, data: Partial<InventoryItemRequest>) =>
+    api.patch<InventoryItem>(`/inventory/inventory-items/${id}/`, data),
   deleteInventoryItem: (id: string) =>
     api.delete(`/inventory/inventory-items/${id}/`),
-  updateQuantity: (id: string, data: { action: 'add' | 'subtract'; amount: number }) =>
-    api.post(`/inventory/inventory-items/${id}/update-quantity/`, data),
+  updateQuantity: (id: string, data: InventoryItemQuantityUpdateRequest) =>
+    api.post(`/inventory/inventory-items/${id}/update_quantity/`, data),
   getLowStockItems: (params?: any) => 
-    api.get<PaginatedResponse<InventoryItemDetail>>('/inventory/inventory-items/low-stock/', { params }),
+    api.get<PaginatedResponse<InventoryItem>>('/inventory/inventory-items/low_stock/', { params }),
+  getOutOfStockItems: (params?: any) => 
+    api.get<PaginatedResponse<InventoryItem>>('/inventory/inventory-items/out_of_stock/', { params }),
 };
 
 export const adminUsersService = {

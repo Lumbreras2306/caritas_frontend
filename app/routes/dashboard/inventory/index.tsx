@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { inventoryService, type Inventory, type InventoryItemDetail } from '~/lib/api';
+import { inventoryService, type Inventory, type InventoryItem } from '~/lib/api';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import { 
   BuildingOfficeIcon, 
@@ -10,9 +10,9 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline';
 
-export default function Inventory() {
+export default function InventoryDashboard() {
   const [inventories, setInventories] = useState<Inventory[]>([]);
-  const [lowStockItems, setLowStockItems] = useState<InventoryItemDetail[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalInventories: 0,
@@ -31,18 +31,55 @@ export default function Inventory() {
       
       // Cargar artículos con stock bajo
       const lowStockResponse = await inventoryService.getLowStockItems();
-      setLowStockItems(lowStockResponse.data.results);
+      
+      // Manejar la estructura real de la respuesta
+      let lowStockItemsData: InventoryItem[] = [];
+      const responseData = lowStockResponse.data as any;
+      
+      if (Array.isArray(responseData)) {
+        lowStockItemsData = responseData;
+      } else if (responseData && responseData.results && Array.isArray(responseData.results.results)) {
+        lowStockItemsData = responseData.results.results;
+      } else if (responseData && Array.isArray(responseData.results)) {
+        lowStockItemsData = responseData.results;
+      } else {
+        lowStockItemsData = [];
+      }
+      
+      setLowStockItems(lowStockItemsData);
       
       // Calcular estadísticas
       setStats({
         totalInventories: inventoriesResponse.data.count,
-        totalItems: lowStockResponse.data.count,
-        lowStockCount: lowStockResponse.data.results.length,
-        outOfStockCount: lowStockResponse.data.results.filter(item => item.quantity === 0).length
+        totalItems: lowStockItemsData.length,
+        lowStockCount: lowStockItemsData.length,
+        outOfStockCount: lowStockItemsData.filter((item: InventoryItem) => item.quantity === 0).length
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading inventory data:', error);
+      
+      // Mostrar detalles específicos del error
+      if (error.response) {
+        console.error('Error response status:', error.response.status);
+        console.error('Error response data:', error.response.data);
+        
+        if (error.response.status === 400) {
+          console.error('Bad Request - Validation errors:', error.response.data);
+        } else if (error.response.status === 401) {
+          console.error('Unauthorized - Authentication required');
+        } else if (error.response.status === 403) {
+          console.error('Forbidden - Insufficient permissions');
+        } else if (error.response.status === 404) {
+          console.error('Not Found - Endpoint not available');
+        } else if (error.response.status === 500) {
+          console.error('Internal Server Error - Server issue');
+        }
+      } else if (error.request) {
+        console.error('Network error - No response received:', error.request);
+      } else {
+        console.error('Request setup error:', error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -70,6 +107,48 @@ export default function Inventory() {
           <p className="mt-2 text-gray-300">
             Supervisar stock y artículos del sistema
           </p>
+        </div>
+
+        {/* Acciones Rápidas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Link
+            to="/dashboard/inventory/list"
+            className="card hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Ver Inventarios</h3>
+                <p className="text-gray-400 text-sm">Lista completa de inventarios</p>
+              </div>
+              <BuildingOfficeIcon className="w-8 h-8 text-blue-400" />
+            </div>
+          </Link>
+
+          <Link
+            to="/dashboard/inventory/new"
+            className="card hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Nuevo Inventario</h3>
+                <p className="text-gray-400 text-sm">Crear inventario nuevo</p>
+              </div>
+              <PlusIcon className="w-8 h-8 text-green-400" />
+            </div>
+          </Link>
+
+          <Link
+            to="/dashboard/inventory/low-stock"
+            className="card hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Stock Bajo</h3>
+                <p className="text-gray-400 text-sm">Artículos con poco stock</p>
+              </div>
+              <ExclamationTriangleIcon className="w-8 h-8 text-yellow-400" />
+            </div>
+          </Link>
         </div>
 
         {/* Estadísticas */}
@@ -158,7 +237,7 @@ export default function Inventory() {
               {inventories.slice(0, 3).map((inventory) => (
                 <Link
                   key={inventory.id}
-                  to={`/dashboard/inventory/${inventory.id}`}
+                  to={`/dashboard/inventory/detail/${inventory.id}`}
                   className="block p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
                 >
                   <div className="flex justify-between items-start">
@@ -194,7 +273,7 @@ export default function Inventory() {
               {lowStockItems.slice(0, 5).map((item) => (
                 <div key={item.id} className="flex justify-between items-center p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
                   <div>
-                    <p className="font-medium text-white">{item.item.name}</p>
+                    <p className="font-medium text-white">{item.item_name}</p>
                     <p className="text-sm text-gray-300">{item.inventory_name}</p>
                   </div>
                   <div className="text-right">

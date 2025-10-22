@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { inventoryService, type Inventory } from '~/lib/api';
+import { inventoryService, hostelsService, type Inventory, type Hostel } from '~/lib/api';
 import LoadingSpinner from '~/components/ui/LoadingSpinner';
 import { PencilIcon, TrashIcon, EyeIcon, PlusIcon } from '@heroicons/react/24/outline';
 
@@ -9,7 +9,7 @@ export default function InventoryList() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [hostelFilter, setHostelFilter] = useState('');
-  const [hostels, setHostels] = useState<{id: string, name: string}[]>([]);
+  const [hostels, setHostels] = useState<Hostel[]>([]);
 
   const loadInventories = async () => {
     try {
@@ -28,13 +28,8 @@ export default function InventoryList() {
 
   const loadHostels = async () => {
     try {
-      // Aquí deberías cargar los albergues desde el servicio correspondiente
-      // Por ahora usamos datos mock
-      setHostels([
-        { id: '1', name: 'Casa San José' },
-        { id: '2', name: 'Albergue San Juan' },
-        { id: '3', name: 'Refugio San Pedro' }
-      ]);
+      const response = await hostelsService.getHostels();
+      setHostels(response.data.results);
     } catch (error) {
       console.error('Error loading hostels:', error);
     }
@@ -143,7 +138,7 @@ export default function InventoryList() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <Link
-                        to={`/dashboard/inventory/${inventory.id}`}
+                        to={`/dashboard/inventory/detail/${inventory.id}`}
                         className="text-blue-400 hover:text-blue-300"
                         title="Ver detalles"
                       >
